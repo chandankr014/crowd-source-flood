@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | AIResQ ClimSols</title>
+    <style>
+        :root {
+            --bg-light: #F5F7FA;
+            --bg-white: #FFFFFF;
+            --text-primary: #1A2B3D;
+            --text-secondary: #6B7A8F;
+            --primary-teal: #0D9488;
+            --primary-teal-light: #14B8A6;
+            --primary-teal-dim: rgba(13, 148, 136, 0.1);
+            --border-color: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .main-header {
+            background: #0A2534;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #0A2534;
+            padding: 16px 0;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: #FFFFFF;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: #94A3B8;
+            margin: 0;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-teal);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-teal-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+
+        .admin-section {
+            padding: 48px 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .auth-card h2 {
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+            box-shadow: 0 0 0 3px var(--primary-teal-dim);
+            background: white;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: var(--primary-teal);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            background: var(--primary-teal-light);
+        }
+
+        .auth-status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .auth-status.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .auth-status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .admin-controls {
+            display: none;
+        }
+
+        .admin-controls.active {
+            display: block;
+        }
+
+        .control-panel {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .control-buttons button {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-buttons button:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+            background: var(--primary-teal-dim);
+        }
+
+        .crawl-section {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .crawl-section input {
+            flex: 1;
+            min-width: 250px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .crawl-section button {
+            background: var(--primary-teal);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .submissions-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .submission-card {
+            display: flex;
+            gap: 16px;
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .submission-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-teal);
+        }
+
+        .submission-thumb {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .submission-info {
+            flex: 1;
+        }
+
+        .submission-info h4 {
+            margin-bottom: 8px;
+            color: var(--primary-teal);
+            font-size: 1.1rem;
+        }
+
+        .submission-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 4px 0;
+        }
+
+        .submission-info strong {
+            color: var(--text-primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.success {
+            color: var(--success);
+        }
+
+        .stat-value.warning {
+            color: var(--warning);
+        }
+
+        .stat-value.error {
+            color: var(--error);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 16px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .tab-btn:hover {
+            background: var(--primary-teal-dim);
+            color: var(--primary-teal);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-teal);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .tab-btn {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                min-width: 80px;
+            }
+
+            .tab-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 250px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .search-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-actions button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .search-actions button:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+        }
+
+        /* Placeholder section */
+        .placeholder-section {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .placeholder-icon {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .placeholder-title {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .placeholder-text {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .btn-accent {
+            background: var(--primary-teal);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-accent:hover {
+            background: var(--primary-teal-light);
+        }
+
+        .btn-outline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+        }
+
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .admin-title {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+        }
+
+        /* View Button */
+        .view-btn {
+            background: var(--primary-teal);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .view-btn:hover {
+            background: var(--primary-teal-light);
+        }
+
+        /* Submission Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.valid {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-badge.invalid {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            background: var(--bg-light);
+        }
+
+        .modal-detail {
+            margin: 10px 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-detail strong {
+            color: var(--text-primary);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            justify-content: flex-end;
+        }
+
+        .btn-valid {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-valid:hover {
+            background: #059669;
+        }
+
+        .btn-invalid {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-invalid:hover {
+            background: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .submission-card {
+                flex-direction: column;
+            }
+
+            .submission-thumb {
+                width: 100%;
+                height: 200px;
+            }
+
+            .control-buttons,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .modal-content {
+                margin: 10px;
+            }
+        }
+
+        /* Spinner Animation */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            background: transparent;
+            color: var(--error);
+            border: 1px solid var(--error);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+            min-height: 44px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Filter Buttons */
+        .filter-buttons {
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-teal);
+            border-color: var(--primary-teal);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .filter-buttons {
+                justify-content: center;
+            }
+
+            .filter-btn {
+                flex: 1;
+                min-width: 70px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo-text">
+                    <h1>AIResQ ClimSols</h1>
+                </div>
+            </div>
+            <a href="/" class="back-btn">
+                ← Back to Portal
+            </a>
+        </div>
+    </header>
+
+    <section class="admin-section">
+        <div class="container">
+            <!-- Auth Card (Login) -->
+            <div id="authCard" class="auth-card">
+                <h2>Admin Login</h2>
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="admin_user">Username</label>
+                        <input type="text" id="admin_user" placeholder="Enter admin username">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin_pass">Password</label>
+                        <input type="password" id="admin_pass" placeholder="Enter admin password">
+                    </div>
+                    <button class="auth-btn" onclick="adminConnect()">Login</button>
+                </div>
+                <div id="authStatus" class="auth-status" style="display: none;"></div>
+            </div>
+
+            <!-- Admin Dashboard (Hidden until login) -->
+            <div id="adminControls" class="admin-controls">
+                <!-- Admin Header -->
+                <div class="admin-header">
+                    <h1 class="admin-title">Admin Dashboard</h1>
+                    <button class="btn-outline" onclick="logout()">Sign Out</button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <p class="stat-label">Total Reports</p>
+                        <p id="totalReports" class="stat-value">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Pending Review</p>
+                        <p id="pendingReports" class="stat-value warning">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Critical Areas</p>
+                        <p id="criticalAreas" class="stat-value error">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Verified</p>
+                        <p id="verifiedReports" class="stat-value success">0</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('submissions')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                        </svg>
+                        Submissions
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('volunteers')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        Volunteers
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('social')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M2 12h20" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        Web/Social Media
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('ai')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+                            <path
+                                d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+                        </svg>
+                        AI Analysis
+                    </button>
+                </div>
+
+                <!-- Submissions Tab -->
+                <div id="submissionsTab">
+                    <!-- Filter Buttons -->
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                        <button class="filter-btn" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                        <button class="filter-btn" data-filter="valid" onclick="setFilter('valid')">Valid</button>
+                        <button class="filter-btn" data-filter="invalid" onclick="setFilter('invalid')">Invalid</button>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search by name, location, or ID..."
+                            onkeyup="filterSubmissions()">
+                        <div class="search-actions">
+                            <button onclick="exportCSV()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" x2="12" y1="15" y2="3" />
+                                </svg>
+                                CSV
+                            </button>
+                            <button onclick="refreshSubmissions()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="submissionsList" class="submissions-list">
+                        <div class="card" style="padding: 3rem; text-align: center;">
+                            <p style="color: var(--text-secondary);">Loading submissions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volunteers Tab -->
+                <div id="volunteersTab" class="hidden">
+                    <div class="search-bar">
+                        <input type="text" id="volunteerSearchInput" placeholder="Search volunteers by name or phone..."
+                            onkeyup="filterVolunteers()">
+                        <div class="search-actions">
+                            <button onclick="refreshVolunteers()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="volunteersList" class="submissions-list">
+                        <div class="card" style="padding: 3rem; text-align: center;">
+                            <p style="color: var(--text-secondary);">Click Refresh to load volunteers...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Web/Social Media Tab -->
+                <div id="socialTab" class="hidden">
+                    <div class="card placeholder-section">
+                        <svg class="placeholder-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M2 12h20" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        <h3 class="placeholder-title">Web/Social Media Intelligence</h3>
+                        <p class="placeholder-text">Scrape and analyze flood-related content from web and social media
+                            platforms.</p>
+                        <button class="btn-accent" onclick="configureScraper()">Configure Scraper</button>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Tab -->
+                <div id="aiTab" class="hidden">
+                    <!-- Search Section -->
+                    <div class="card" style="padding: 24px; margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2"
+                                style="vertical-align: middle; margin-right: 8px;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                            AI-Powered News Search & Extraction
+                        </h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+                            Search for flood-related news and extract intelligence from web sources.
+                        </p>
+
+                        <!-- Search Form -->
+                        <div class="search-bar" style="margin-bottom: 16px;">
+                            <input type="text" id="aiSearchQuery" placeholder="Enter search query" style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 0.9rem;">
+                                    Max URLs:
+                                    <select id="aiMaxUrls"
+                                        style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-light);">
+                                        <option value="1">1</option>
+                                        <option value="2" selected>2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                </label>
+                                <button class="btn-accent" onclick="performAISearch()" id="aiSearchBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2"
+                                        style="vertical-align: middle; margin-right: 6px;">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search Status -->
+                        <div id="aiSearchStatus"
+                            style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 16px;"></div>
+
+                        <!-- Found URLs with Checkboxes -->
+                        <div id="aiUrlResults" style="display: none;">
+                            <h4 style="margin-bottom: 12px; color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                </svg>
+                                Select URLs to Extract
+                            </h4>
+                            <div id="aiUrlList"
+                                style="background: var(--bg-light); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                            </div>
+                            <button class="btn-accent" onclick="extractFromUrls()" id="aiExtractBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path
+                                        d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z">
+                                    </path>
+                                    <path
+                                        d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z">
+                                    </path>
+                                </svg>
+                                Extract Intelligence
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Extraction Results -->
+                    <div id="aiExtractionResults" class="card"
+                        style="padding: 24px; display: none; margin-bottom: 20px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 8px;">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
+                                    </path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                                </svg>
+                                Extracted News Items
+                            </h3>
+                            <span id="aiExtractionCount"
+                                style="background: var(--primary-teal); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;"></span>
+                        </div>
+                        <div id="aiNewsList" style="margin-bottom: 20px;"></div>
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button class="btn-outline" onclick="discardExtractedNews()"
+                                style="color: var(--error); border-color: var(--error);">
+                                ✗ Discard
+                            </button>
+                            <button class="btn-accent" onclick="confirmSaveNews()" style="background: var(--success);">
+                                ✓ Save to Records
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Saved News History -->
+                    <div class="card" style="padding: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 8px;">
+                                    <path d="M3 3v18h18"></path>
+                                    <path d="m19 9-5 5-4-4-3 3"></path>
+                                </svg>
+                                Saved News Records
+                            </h3>
+                            <button class="btn-outline" onclick="refreshSavedNews()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                    <path d="M21 3v5h-5"></path>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                    <path d="M8 16H3v5"></path>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="savedNewsList">
+                            <p style="color: var(--text-secondary); text-align: center; padding: 24px;">No saved news
+                                records yet. Search and extract news to get started.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer
+        style="background: #0A2534; border-top: 1px solid #0A2534; padding: 20px 0; text-align: center; color: #94A3B8; font-size: 0.85rem;">
+        <div class="container">© 2025 AIResQ ClimSols. All rights reserved.</div>
+    </footer>
+
+    <!-- Submission Viewer Modal -->
+    <div id="submissionModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Submission Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" class="modal-image" src="" alt="Submission photo">
+                <p class="modal-detail"><strong>Reporter:</strong> <span id="modalName"></span> (<span
+                        id="modalPhone"></span>)</p>
+                <p class="modal-detail"><strong>Location:</strong> <span id="modalLocation"></span></p>
+                <p class="modal-detail"><strong>Vehicle Ref:</strong> <span id="modalVehicle"></span></p>
+                <p class="modal-detail"><strong>Flood Depth:</strong> <span id="modalDepth"></span> cm</p>
+                <p class="modal-detail"><strong>GPS:</strong> <span id="modalGPS"></span></p>
+                <p class="modal-detail"><strong>Remarks:</strong> <span id="modalRemarks"></span></p>
+                <p class="modal-detail"><strong>Submitted:</strong> <span id="modalTime"></span></p>
+                <p class="modal-detail"><strong>Status:</strong> <span id="modalStatus"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-invalid" onclick="verifySubmission('invalid')">✗ Invalid</button>
+                <button class="btn-valid" onclick="verifySubmission('valid')">✓ Valid</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authHeader = '';
+        let allSubmissions = [];
+        let allVolunteers = [];
+        let currentTab = 'submissions';
+
+        // Check for existing valid session on page load
+        async function checkExistingSession() {
+            try {
+                const response = await fetch('/api/admin/submissions', {
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    // Valid session exists, skip login
+                    document.getElementById('authCard').style.display = 'none';
+                    document.getElementById('adminControls').classList.add('active');
+                    const data = await response.json();
+                    allSubmissions = data.items;
+                    updateStats(data.items);
+                    displaySubmissions(data.items);
+                }
+            } catch (e) {
+                // No valid session, show login form
+            }
+        }
+
+        // Auto-check session on page load
+        document.addEventListener('DOMContentLoaded', checkExistingSession);
+
+        // Tab switching
+        function switchTab(tabName) {
+            currentTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.tab-btn').classList.add('active');
+
+            // Hide all tabs
+            document.getElementById('submissionsTab').classList.add('hidden');
+            document.getElementById('volunteersTab').classList.add('hidden');
+            document.getElementById('socialTab').classList.add('hidden');
+            document.getElementById('aiTab').classList.add('hidden');
+
+            // Show selected tab
+            if (tabName === 'submissions') {
+                document.getElementById('submissionsTab').classList.remove('hidden');
+            } else if (tabName === 'volunteers') {
+                document.getElementById('volunteersTab').classList.remove('hidden');
+                if (allVolunteers.length === 0) refreshVolunteers();
+            } else if (tabName === 'social') {
+                document.getElementById('socialTab').classList.remove('hidden');
+            } else if (tabName === 'ai') {
+                document.getElementById('aiTab').classList.remove('hidden');
+            }
+        }
+
+        // Login
+        async function adminConnect() {
+            const username = document.getElementById('admin_user').value.trim();
+            const password = document.getElementById('admin_pass').value;
+            const authStatus = document.getElementById('authStatus');
+
+            if (!username || !password) {
+                authStatus.textContent = 'Please enter both username and password';
+                authStatus.className = 'auth-status error';
+                authStatus.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Use JWT login endpoint instead of Basic Auth
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.ok) {
+                    authStatus.textContent = '✓ Login successful';
+                    authStatus.className = 'auth-status success';
+                    authStatus.style.display = 'block';
+
+                    setTimeout(() => {
+                        document.getElementById('authCard').style.display = 'none';
+                        document.getElementById('adminControls').classList.add('active');
+                        refreshSubmissions();
+                    }, 1000);
+                } else {
+                    throw new Error(data.error || 'Authentication failed');
+                }
+            } catch (error) {
+                authStatus.textContent = '✗ ' + error.message;
+                authStatus.className = 'auth-status error';
+                authStatus.style.display = 'block';
+            }
+        }
+
+        // Logout using JWT endpoint
+        async function logout() {
+            try {
+                await fetch('/api/admin/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+            } catch (e) { }
+
+            allSubmissions = [];
+            document.getElementById('adminControls').classList.remove('active');
+            document.getElementById('authCard').style.display = 'block';
+            document.getElementById('admin_user').value = '';
+            document.getElementById('admin_pass').value = '';
+            document.getElementById('authStatus').style.display = 'none';
+        }
+
+        // Current filter state
+        let currentFilter = 'all';
+
+        // Set filter and refresh
+        function setFilter(filter) {
+            currentFilter = filter;
+            // Update filter button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            refreshSubmissions();
+        }
+
+        // Refresh submissions with filter support
+        async function refreshSubmissions() {
+            const list = document.getElementById('submissionsList');
+            list.innerHTML = '<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--text-secondary);">Loading...</p></div>';
+
+            try {
+                const url = `/api/admin/submissions${currentFilter !== 'all' ? '?filter=' + currentFilter : ''}`;
+                const response = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        logout();
+                        throw new Error('Session expired, please login again');
+                    }
+                    throw new Error('Failed to fetch submissions');
+                }
+
+                const data = await response.json();
+                allSubmissions = data.items;
+
+                // Update stats (always fetch all for accurate stats)
+                if (currentFilter === 'all') {
+                    updateStats(data.items);
+                }
+
+                // Display submissions
+                displaySubmissions(data.items);
+
+            } catch (error) {
+                list.innerHTML = `<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--error);">Error: ${error.message}</p></div>`;
+            }
+        }
+
+        // Update statistics
+        function updateStats(items) {
+            const total = items.length;
+            const critical = items.filter(i => i.flood_depth_cm > 100).length;
+            const pending = items.filter(i => !i.verification_status || i.verification_status === 'pending').length;
+            const verified = items.filter(i => i.verification_status === 'valid').length;
+
+            document.getElementById('totalReports').textContent = total;
+            document.getElementById('criticalAreas').textContent = critical;
+            document.getElementById('pendingReports').textContent = pending;
+            document.getElementById('verifiedReports').textContent = verified;
+        }
+
+        // Display submissions with thumbnails and delete button
+        function displaySubmissions(items) {
+            const list = document.getElementById('submissionsList');
+
+            if (items.length === 0) {
+                list.innerHTML = '<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--text-secondary);">No submissions found</p></div>';
+                return;
+            }
+
+            list.innerHTML = items.map(item => {
+                const status = item.verification_status || 'pending';
+                const statusClass = status === 'valid' ? 'valid' : status === 'invalid' ? 'invalid' : 'pending';
+                // Use thumbnail for faster loading, fallback to placeholder
+                const thumbSrc = item.thumbnail_path ? '/' + item.thumbnail_path : (item.image_path ? '/' + item.image_path : '');
+                const imgHtml = thumbSrc ?
+                    `<img src="${thumbSrc}" alt="Flood photo" class="submission-thumb" onerror="this.style.display='none'">` :
+                    `<div class="submission-thumb" style="display: flex; align-items: center; justify-content: center; background: var(--bg-light);"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
+                return `
+                <div class="submission-card">
+                    ${imgHtml}
+                    <div class="submission-info" style="flex: 1;">
+                        <h4>${item.name || 'Anonymous'} ${item.phone ? '- ' + item.phone : ''}</h4>
+                        <p><strong>Location:</strong> ${[item.street, item.zone, item.ward].filter(Boolean).join(', ') || 'Not specified'}</p>
+                        <p><strong>Reference:</strong> ${item.vehicle_type || 'N/A'} | <strong>Depth:</strong> ${item.flood_depth_cm} cm</p>
+                        <p><strong>GPS:</strong> ${item.gps?.lat?.toFixed(5) || 'N/A'}, ${item.gps?.lon?.toFixed(5) || 'N/A'}</p>
+                        <p><strong>Submitted:</strong> ${new Date(item.received_at).toLocaleString()}</p>
+                        <p><span class="status-badge ${statusClass}">${status}</span></p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
+                        <button class="view-btn" onclick="openModal('${item.id}')">View</button>
+                        <button class="delete-btn" onclick="deleteSubmission('${item.id}')">Delete</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Delete submission with confirmation
+        async function deleteSubmission(id) {
+            if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/submission/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Delete failed');
+                }
+
+                // Refresh the list
+                refreshSubmissions();
+            } catch (error) {
+                alert('Error deleting submission: ' + error.message);
+            }
+        }
+
+        // Filter submissions
+        function filterSubmissions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = allSubmissions.filter(item => {
+                return item.name.toLowerCase().includes(searchTerm) ||
+                    item.phone.includes(searchTerm) ||
+                    item.id.toLowerCase().includes(searchTerm) ||
+                    (item.street && item.street.toLowerCase().includes(searchTerm)) ||
+                    (item.zone && item.zone.toLowerCase().includes(searchTerm)) ||
+                    (item.ward && item.ward.toLowerCase().includes(searchTerm));
+            });
+
+            displaySubmissions(filtered);
+        }
+
+        // Volunteer functions
+        async function refreshVolunteers() {
+            const list = document.getElementById('volunteersList');
+            list.innerHTML = '<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--text-secondary);">Loading volunteers...</p></div>';
+
+            try {
+                const response = await fetch('/api/admin/volunteers', {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch volunteers');
+
+                const data = await response.json();
+                allVolunteers = data.items;
+                displayVolunteers(data.items);
+
+            } catch (error) {
+                list.innerHTML = `<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--error);">Error: ${error.message}</p></div>`;
+            }
+        }
+
+        function displayVolunteers(items) {
+            const list = document.getElementById('volunteersList');
+
+            if (items.length === 0) {
+                list.innerHTML = '<div class="card" style="padding: 3rem; text-align: center;"><p style="color: var(--text-secondary);">No volunteers registered yet</p></div>';
+                return;
+            }
+
+            list.innerHTML = items.map(item => {
+                const statusClass = item.status === 'active' ? 'valid' : 'pending';
+                const skills = item.skills && item.skills.length > 0 ? item.skills.join(', ') : 'None specified';
+                return `
+                <div class="submission-card">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: var(--primary-teal-dim); border-radius: 50%; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-teal)" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="submission-info" style="flex: 1;">
+                        <h4>${item.username}</h4>
+                        <p><strong>Phone:</strong> ${item.phone}</p>
+                        <p><strong>Skills:</strong> ${skills}</p>
+                        <p><strong>Availability:</strong> ${item.availability || 'Not specified'}</p>
+                        <p><strong>Registered:</strong> ${item.registered_at ? new Date(item.registered_at).toLocaleString() : 'N/A'}</p>
+                        <p><span class="status-badge ${statusClass}">${item.status || 'active'}</span></p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function filterVolunteers() {
+            const searchTerm = document.getElementById('volunteerSearchInput').value.toLowerCase();
+
+            const filtered = allVolunteers.filter(item => {
+                return item.username.toLowerCase().includes(searchTerm) ||
+                    item.phone.includes(searchTerm) ||
+                    (item.skills && item.skills.some(s => s.toLowerCase().includes(searchTerm)));
+            });
+
+            displayVolunteers(filtered);
+        }
+
+        // Export JSON - removed from UI but keeping function for backwards compatibility
+        function exportJSON() {
+            window.open('/api/admin/export.json', '_blank');
+        }
+
+        // Export CSV
+        async function exportCSV() {
+            try {
+                const response = await fetch('/api/admin/export.csv', {
+                    headers: { 'Authorization': authHeader }
+                });
+
+                if (!response.ok) throw new Error('Export failed');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `submissions_${Date.now()}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('Export failed: ' + error.message);
+            }
+        }
+
+        // Configure scraper (placeholder)
+        function configureScraper() {
+            alert('Web/Social Media scraper configuration coming soon. Use your own endpoint to fetch scraped data.');
+        }
+
+        // AI Analysis Variables
+        let currentSearchQuery = '';
+        let currentUrls = [];
+        let currentExtractedNews = [];
+
+        // Step 1: Search for URLs
+        async function performAISearch() {
+            const query = document.getElementById('aiSearchQuery').value.trim();
+            const maxUrls = parseInt(document.getElementById('aiMaxUrls').value);
+            const searchBtn = document.getElementById('aiSearchBtn');
+            const urlResults = document.getElementById('aiUrlResults');
+
+            if (!query) {
+                showAIStatus('Please enter a search query', 'error');
+                return;
+            }
+
+            currentSearchQuery = query;
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<span class="spinner"></span> Searching...';
+            urlResults.style.display = 'none';
+            document.getElementById('aiExtractionResults').style.display = 'none';
+
+            try {
+                showAIStatus('Searching for relevant news URLs...', 'info');
+
+                const response = await fetch('/api/admin/ai/search', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authHeader,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query, max_urls: maxUrls })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Search failed');
+                }
+
+                // Extract URLs from the response
+                currentUrls = data.urls || data.results || [];
+
+                if (currentUrls.length === 0) {
+                    showAIStatus('No URLs found for this query. Try a different search term.', 'warning');
+                } else {
+                    showAIStatus(`Found ${currentUrls.length} URL(s). Select the ones to extract and click "Extract Intelligence".`, 'success');
+                    displayFoundUrls(currentUrls);
+                }
+            } catch (error) {
+                showAIStatus(error.message, 'error');
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg> Search`;
+            }
+        }
+
+        // Display found URLs with checkboxes
+        function displayFoundUrls(urls) {
+            const urlList = document.getElementById('aiUrlList');
+            const urlResults = document.getElementById('aiUrlResults');
+
+            urlList.innerHTML = urls.map((url, idx) => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; ${idx < urls.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
+                    <input type="checkbox" id="url_${idx}" checked style="width: 18px; height: 18px; accent-color: var(--primary-teal); cursor: pointer;">
+                    <label for="url_${idx}" style="flex: 1; font-size: 0.9rem; word-break: break-all; color: var(--text-secondary); cursor: pointer;">
+                        <a href="${url}" target="_blank" style="color: var(--primary-teal);" onclick="event.stopPropagation();">${url}</a>
+                    </label>
+                </div>
+            `).join('');
+
+            urlResults.style.display = 'block';
+        }
+
+        // Step 2: Extract intelligence from selected URLs
+        async function extractFromUrls() {
+            const extractBtn = document.getElementById('aiExtractBtn');
+            const checkboxes = document.querySelectorAll('#aiUrlList input[type="checkbox"]');
+
+            // Get selected URLs
+            const selectedUrls = [];
+            checkboxes.forEach((cb, idx) => {
+                if (cb.checked && currentUrls[idx]) {
+                    selectedUrls.push(currentUrls[idx]);
+                }
+            });
+
+            if (selectedUrls.length === 0) {
+                showAIStatus('Please select at least one URL to extract', 'error');
+                return;
+            }
+
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<span class="spinner"></span> Extracting...';
+            showAIStatus(`Extracting intelligence from ${selectedUrls.length} URL(s)... This may take a moment.`, 'info');
+
+            try {
+                const response = await fetch('/api/admin/ai/extract', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authHeader,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ urls: selectedUrls })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Extraction failed');
+                }
+
+                // Process extracted data
+                currentExtractedNews = processExtractedData(data);
+
+                if (currentExtractedNews.length === 0) {
+                    showAIStatus('No news items could be extracted. Try different URLs.', 'warning');
+                } else {
+                    showAIStatus(`✓ Extracted ${currentExtractedNews.length} bullet point(s). Review and Save or Discard.`, 'success');
+                    displayExtractedNews(currentExtractedNews);
+                }
+            } catch (error) {
+                showAIStatus(error.message, 'error');
+            } finally {
+                extractBtn.disabled = false;
+                extractBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path></svg> Extract Intelligence`;
+            }
+        }
+
+        // Process extracted data into news items
+        function processExtractedData(data) {
+            let items = [];
+            const sourceUrls = data.urls || currentUrls || [];
+            const sourceUrl = sourceUrls.length > 0 ? sourceUrls.join(', ') : 'Extracted content';
+
+            console.log('Processing extracted data:', data); // Debug log
+
+            // Handle summary field (primary format from the API)
+            if (data.summary) {
+                const summaryText = data.summary;
+
+                // Parse markdown-style content into bullet points
+                // Split by common patterns: newlines, bullet points, numbered lists
+                const lines = summaryText
+                    .split(/\n/)
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+
+                let currentSection = '';
+
+                lines.forEach(line => {
+                    // Skip headers (lines starting with **)
+                    if (line.match(/^\*\*[^*]+\*\*\s*$/)) {
+                        currentSection = line.replace(/\*\*/g, '').trim();
+                        return;
+                    }
+
+                    // Process actual content lines
+                    // Remove markdown formatting
+                    let cleanLine = line
+                        .replace(/^\*\*/, '')  // Remove leading **
+                        .replace(/\*\*$/, '')  // Remove trailing **
+                        .replace(/\*\*/g, '')  // Remove remaining **
+                        .replace(/^[-•*]\s*/, '')  // Remove bullet points
+                        .replace(/^\d+\.\s*/, '')  // Remove numbered lists
+                        .trim();
+
+                    // Skip empty lines or section-only lines
+                    if (cleanLine.length < 10) return;
+
+                    // Split lines that contain multiple facts (separated by "  " or " | ")
+                    const subItems = cleanLine.split(/\s{2,}|\s*\|\s*/).filter(s => s.trim().length > 10);
+
+                    if (subItems.length > 1) {
+                        subItems.forEach(subItem => {
+                            items.push({
+                                text: subItem.trim(),
+                                source: sourceUrl,
+                                section: currentSection
+                            });
+                        });
+                    } else if (cleanLine.length > 10) {
+                        items.push({
+                            text: cleanLine,
+                            source: sourceUrl,
+                            section: currentSection
+                        });
+                    }
+                });
+            }
+
+            // Handle extracted array format
+            if (data.extracted && Array.isArray(data.extracted)) {
+                data.extracted.forEach(page => {
+                    const pageUrl = page.url || sourceUrl;
+                    if (page.content) {
+                        const lines = page.content.split('\n').filter(line => line.trim());
+                        lines.forEach(line => {
+                            const cleanLine = line.replace(/^[-•*]\s*/, '').trim();
+                            if (cleanLine.length > 10) {
+                                items.push({
+                                    text: cleanLine,
+                                    source: pageUrl
+                                });
+                            }
+                        });
+                    }
+                    if (page.summary) {
+                        items.push({
+                            text: page.summary.trim(),
+                            source: pageUrl
+                        });
+                    }
+                    if (page.key_points && Array.isArray(page.key_points)) {
+                        page.key_points.forEach(point => {
+                            if (point && point.length > 10) {
+                                items.push({
+                                    text: point,
+                                    source: pageUrl
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Handle results array format
+            if (data.results && Array.isArray(data.results)) {
+                data.results.forEach(result => {
+                    if (result.text || result.content || result.summary) {
+                        const text = (result.text || result.content || result.summary).trim();
+                        if (text.length > 10) {
+                            items.push({
+                                text: text,
+                                source: result.url || result.source || sourceUrl
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Handle single content field
+            if (data.content && typeof data.content === 'string') {
+                const lines = data.content.split('\n').filter(line => line.trim());
+                lines.forEach(line => {
+                    const cleanLine = line.replace(/^[-•*]\s*/, '').trim();
+                    if (cleanLine.length > 10) {
+                        items.push({
+                            text: cleanLine,
+                            source: sourceUrl
+                        });
+                    }
+                });
+            }
+
+            // Filter out empty items and duplicates
+            items = items.filter(item => item.text && item.text.length > 10);
+            const uniqueItems = [];
+            const seen = new Set();
+            items.forEach(item => {
+                const normalizedText = item.text.toLowerCase().replace(/[^\w\s]/g, '').trim();
+                if (!seen.has(normalizedText) && normalizedText.length > 10) {
+                    seen.add(normalizedText);
+                    uniqueItems.push(item);
+                }
+            });
+
+            console.log('Processed items:', uniqueItems); // Debug log
+            return uniqueItems;
+        }
+
+        // Display extracted news in bullet points
+        function displayExtractedNews(items) {
+            const container = document.getElementById('aiExtractionResults');
+            const newsList = document.getElementById('aiNewsList');
+            const countEl = document.getElementById('aiExtractionCount');
+
+            countEl.textContent = `${items.length} item(s)`;
+
+            newsList.innerHTML = `
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    ${items.map((item, idx) => `
+                        <li style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: ${idx % 2 === 0 ? 'var(--bg-light)' : 'white'}; border-radius: 8px; margin-bottom: 8px;">
+                            <span style="flex-shrink: 0; width: 24px; height: 24px; background: var(--primary-teal); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">${idx + 1}</span>
+                            <div style="flex: 1;">
+                                <p style="margin: 0 0 4px 0; color: var(--text-primary); line-height: 1.5;">${escapeHtml(item.text)}</p>
+                                <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    <a href="${item.source}" target="_blank" style="color: var(--primary-teal);">Source</a>
+                                </p>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Discard extracted news
+        function discardExtractedNews() {
+            if (confirm('Are you sure you want to discard the extracted news? This cannot be undone.')) {
+                currentExtractedNews = [];
+                document.getElementById('aiExtractionResults').style.display = 'none';
+                showAIStatus('Extracted news discarded', 'info');
+            }
+        }
+
+        // Confirm save news
+        function confirmSaveNews() {
+            if (currentExtractedNews.length === 0) {
+                alert('No news items to save');
+                return;
+            }
+
+            if (confirm(`Save ${currentExtractedNews.length} news item(s) to records?\n\nQuery: "${currentSearchQuery}"`)) {
+                saveNewsToRecords();
+            }
+        }
+
+        // Save news to records
+        async function saveNewsToRecords() {
+            showAIStatus('Saving news to records...', 'info');
+
+            try {
+                const response = await fetch('/api/admin/ai/news/save', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authHeader,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: currentSearchQuery,
+                        source_urls: currentUrls,
+                        news_items: currentExtractedNews
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Save failed');
+                }
+
+                showAIStatus(`Successfully saved ${data.saved_count} news item(s)!`, 'success');
+                currentExtractedNews = [];
+                document.getElementById('aiExtractionResults').style.display = 'none';
+                refreshSavedNews();
+            } catch (error) {
+                showAIStatus('Failed to save: ' + error.message, 'error');
+            }
+        }
+
+        // Refresh saved news list
+        async function refreshSavedNews() {
+            const container = document.getElementById('savedNewsList');
+            container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 24px;">Loading saved records...</p>';
+
+            try {
+                const response = await fetch('/api/admin/ai/news', {
+                    headers: { 'Authorization': authHeader }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch saved news');
+
+                const data = await response.json();
+                displaySavedNews(data.items);
+            } catch (error) {
+                container.innerHTML = `<p style="color: var(--error); text-align: center; padding: 24px;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Display saved news records
+        function displaySavedNews(items) {
+            const container = document.getElementById('savedNewsList');
+
+            if (items.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 24px;">No saved news records yet. Search and extract news to get started.</p>';
+                return;
+            }
+
+            container.innerHTML = items.map(record => `
+                <div class="card" style="padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; color: var(--text-primary);">"${escapeHtml(record.query)}"</h4>
+                            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                ${new Date(record.scraped_at).toLocaleString()} • ${record.item_count} item(s)
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="newsBtn_${record.id}" class="btn-outline" onclick="toggleNewsExpand('${record.id}')" style="padding: 6px 12px; font-size: 0.85rem;">
+                                View Details
+                            </button>
+                            <button class="btn-outline" onclick="deleteSavedNews('${record.id}')" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--error);">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div id="newsExpand_${record.id}" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        <ul style="list-style: disc; padding-left: 20px; margin: 0;">
+                            ${record.news_items.slice(0, 10).map(item => `
+                                <li style="margin-bottom: 8px; color: var(--text-primary); line-height: 1.5;">${escapeHtml(item.text || item)}</li>
+                            `).join('')}
+                            ${record.news_items.length > 10 ? `<li style="color: var(--text-secondary);">... and ${record.news_items.length - 10} more items</li>` : ''}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle news expand/collapse
+        function toggleNewsExpand(recordId) {
+            const expandEl = document.getElementById(`newsExpand_${recordId}`);
+            const btnEl = document.getElementById(`newsBtn_${recordId}`);
+            if (expandEl.style.display === 'none') {
+                expandEl.style.display = 'block';
+                if (btnEl) btnEl.textContent = 'Hide Details';
+            } else {
+                expandEl.style.display = 'none';
+                if (btnEl) btnEl.textContent = 'View Details';
+            }
+        }
+
+        // Delete saved news
+        async function deleteSavedNews(newsId) {
+            if (!confirm('Are you sure you want to delete this saved news record?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/ai/news/${newsId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': authHeader }
+                });
+
+                if (!response.ok) throw new Error('Delete failed');
+
+                refreshSavedNews();
+            } catch (error) {
+                alert('Failed to delete: ' + error.message);
+            }
+        }
+
+        // Show AI status message
+        function showAIStatus(message, type) {
+            const statusEl = document.getElementById('aiSearchStatus');
+            statusEl.style.display = 'block';
+
+            const colors = {
+                'success': { bg: 'rgba(16, 185, 129, 0.1)', text: 'var(--success)', border: 'var(--success)' },
+                'error': { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--error)', border: 'var(--error)' },
+                'warning': { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--warning)', border: 'var(--warning)' },
+                'info': { bg: 'rgba(13, 148, 136, 0.1)', text: 'var(--primary-teal)', border: 'var(--primary-teal)' }
+            };
+
+            const style = colors[type] || colors['info'];
+            statusEl.style.background = style.bg;
+            statusEl.style.color = style.text;
+            statusEl.style.border = `1px solid ${style.border}`;
+            statusEl.textContent = message;
+        }
+
+        // Modal functions
+        let currentSubmissionId = null;
+
+        function openModal(submissionId) {
+            currentSubmissionId = submissionId;
+            const item = allSubmissions.find(s => s.id === submissionId);
+            if (!item) return;
+
+            document.getElementById('modalImage').src = '/' + item.image_path;
+            document.getElementById('modalName').textContent = item.name;
+            document.getElementById('modalPhone').textContent = item.phone;
+            document.getElementById('modalLocation').textContent = [item.street, item.zone, item.ward].filter(Boolean).join(', ') || 'Not specified';
+            document.getElementById('modalVehicle').textContent = item.vehicle_type || 'N/A';
+            document.getElementById('modalDepth').textContent = item.flood_depth_cm;
+            document.getElementById('modalGPS').textContent = item.gps?.lat ? `${item.gps.lat}, ${item.gps.lon} (±${item.gps.accuracy || '?'}m)` : 'N/A';
+            document.getElementById('modalRemarks').textContent = item.remarks || 'None';
+            document.getElementById('modalTime').textContent = new Date(item.received_at).toLocaleString();
+
+            const status = item.verification_status || 'pending';
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.innerHTML = `<span class="status-badge ${status}">${status}</span>`;
+
+            document.getElementById('submissionModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('submissionModal').classList.add('hidden');
+            currentSubmissionId = null;
+        }
+
+        async function verifySubmission(status) {
+            if (!currentSubmissionId) return;
+
+            try {
+                const response = await fetch(`/api/admin/verify/${currentSubmissionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authHeader,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+
+                if (!response.ok) throw new Error('Verification failed');
+
+                const data = await response.json();
+                if (data.ok) {
+                    // Update local data
+                    const item = allSubmissions.find(s => s.id === currentSubmissionId);
+                    if (item) item.verification_status = status;
+
+                    // Refresh display
+                    displaySubmissions(allSubmissions);
+                    updateStats(allSubmissions);
+                    closeModal();
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Close modal on overlay click
+        document.getElementById('submissionModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) closeModal();
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Enter key to trigger search (with null check)
+        const aiSearchInput = document.getElementById('aiSearchQuery');
+        if (aiSearchInput) {
+            aiSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') performAISearch();
+            });
+        }
+    </script>
+</body>
+
+</html>

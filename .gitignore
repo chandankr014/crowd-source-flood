@@ -1,0 +1,20 @@
+# Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+.env.local
+.env
+.ipynb_checkpoints/
+*.ipynb
+
+crowd_data/images/*
+crowd_data/intel/*
+crowd_data/scraped_news/*
+crowd_data/submissions/*
+crowd_data/thumbnails/*
+crowd_data/volunteers/*
+
+DEPLOYMENT.md
+keywords.txt

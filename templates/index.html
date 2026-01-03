@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIResQ ClimSols - Flood monitoring and volunteer coordination platform">
+    <meta name="theme-color" content="#0D9589">
+    <title>AIResQ ClimSols - Flood Depth Reporting</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        :root {
+            --primary: #0D9589;
+            --primary-dark: #0A2534;
+            --primary-light: #0A2534;
+            --primary-dim: rgba(29, 120, 159, 0.1);
+            --bg-white: #FFFFFF;
+            --bg-light: #F8FAFC;
+            --text-primary: #0A2534;
+            --text-secondary: #5A6B7A;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #0A2534;
+            border-bottom: 1px solid #0A2534;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #FFFFFF;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .logo span {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: #94A3B8;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .nav-link:hover {
+            background: rgba(29, 120, 159, 0.2);
+            color: #FFFFFF;
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-link {
+            color: #0D9589;
+            border: 1px solid #0D9589;
+        }
+
+        .admin-link:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Cards & Forms */
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px var(--primary-dim);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1.5px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .required {
+            color: var(--error);
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 32px 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        /* Reference Object Selector - Text Only */
+        .reference-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0 20px;
+        }
+
+        .reference-option {
+            padding: 10px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            background: var(--bg-white);
+        }
+
+        .reference-option:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .reference-option.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Flood Depth Section */
+        .depth-section {
+            background: var(--bg-light);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+
+        .depth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .depth-display {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .depth-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .depth-unit-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .depth-status {
+            padding: 6px 14px;
+            background: var(--primary-dim);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Unit Selector */
+        .unit-selector {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-white);
+            border-radius: var(--radius);
+            padding: 4px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .unit-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unit-btn:hover {
+            color: var(--primary);
+        }
+
+        .unit-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Visualization */
+        .depth-visual-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 220px;
+            margin: auto;
+            background: linear-gradient(to bottom, #E8F4F8 0%, #D4EAF0 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+        }
+
+        .reference-display {
+            position: absolute;
+            bottom: 10px;
+            /* SVG images sit exactly 10px above container bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            /* Align image to bottom */
+        }
+
+        .reference-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: bottom center;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+        }
+
+        .water-level {
+            position: absolute;
+            bottom: 10px;
+            /* Water starts at same level as SVG images */
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(29, 120, 159, 0.7) 0%, rgba(44, 143, 181, 0.5) 100%);
+            transition: height 0.3s ease;
+        }
+
+        .water-wave {
+            position: absolute;
+            top: -8px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: radial-gradient(ellipse at center, rgba(29, 120, 159, 0.5) 0%, transparent 70%);
+            animation: wave 2s infinite ease-in-out;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(-8px);
+            }
+        }
+
+        /* Depth Controls */
+        .depth-controls {
+            margin-top: 20px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .slider-row span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 40px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(29, 120, 159, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .depth-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .depth-input-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .depth-input-group input[type="number"] {
+            width: 90px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            text-align: center;
+            background: var(--bg-white);
+        }
+
+        .depth-input-group input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-dim);
+        }
+
+        /* Checkbox Group */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--primary);
+        }
+
+        .checkbox-item.checked {
+            background: var(--primary-dim);
+            border-color: var(--primary);
+        }
+
+        .checkbox-item input {
+            display: none;
+        }
+
+        /* Radio Group */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .radio-item {
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .radio-item:hover {
+            border-color: var(--primary);
+        }
+
+        .radio-item.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .radio-item input {
+            display: none;
+        }
+
+        /* GPS Status */
+        .gps-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-light);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .gps-status.active {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Status Messages */
+        .status-msg {
+            padding: 14px;
+            border-radius: var(--radius);
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-msg.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-msg.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        /* Footer */
+        .footer {
+            background: #0A2534;
+            border-top: 1px solid #0A2534;
+            padding: 20px 0;
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.85rem;
+        }
+
+        /* Captcha */
+        .captcha-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--bg-light);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .captcha-question {
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 10px 14px;
+            background: var(--bg-white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .captcha-input {
+            width: 80px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .nav-links {
+                gap: 4px;
+                flex-wrap: wrap;
+            }
+
+            .nav-link {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            .logo span {
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .reference-selector {
+                gap: 8px;
+            }
+
+            .reference-option {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+
+            .depth-visual-container {
+                height: 180px;
+                max-width: 100%;
+            }
+
+            .reference-display {
+                width: 80px;
+                height: 80px;
+            }
+
+            .depth-value {
+                font-size: 2rem;
+            }
+
+            .depth-input-group {
+                flex-wrap: wrap;
+            }
+
+            .captcha-section {
+                flex-wrap: wrap;
+            }
+
+            .captcha-section>* {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">
+                <img src="/static/airesq_dark.png" alt="AIResQ">
+                <span>AIResQ ClimSols</span>
+            </a>
+            <div class="nav-links">
+                <button class="nav-link active" onclick="showPage('crowdsource')">Report Flood</button>
+                <button class="nav-link" onclick="showPage('volunteer')">Volunteer</button>
+                <button class="nav-link" onclick="showPage('about')">About</button>
+                <a href="/admin" class="nav-link admin-link">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-content">
+        <div class="container">
+            <!-- CrowdSource Page -->
+            <div id="crowdsourcePage">
+                <h1 class="page-title">Report Flood Depth</h1>
+                <!-- <p class="page-subtitle">Help monitor flood levels in your area by submitting a report with a reference photo</p> -->
+
+                <form id="reportForm" class="card" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-input" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" name="phone" id="phone" class="form-input" placeholder="" minlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Street/Locality</label>
+                            <input type="text" name="street" id="street" class="form-input" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label>Zone/Area</label>
+                            <input type="text" id="zone" name="zone" class="form-input" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label>Ward</label>
+                            <input type="text" name="ward" class="form-input" placeholder="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reference Object</label>
+                        <div class="reference-selector">
+                            <div class="reference-option selected" data-type="car">Car</div>
+                            <div class="reference-option" data-type="autorickshaw">Auto Rickshaw</div>
+                            <div class="reference-option" data-type="bike">Motorcycle</div>
+                            <div class="reference-option" data-type="cycle">Bicycle</div>
+                            <!-- <div class="reference-option" data-type="house">House</div> -->
+                            <div class="reference-option" data-type="person">Person <i>(6 feet)</i></div>
+                        </div>
+                        <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
+                    </div>
+
+                    <div class="depth-section">
+                        <div class="depth-header">
+                            <div class="depth-display">
+                                <span class="depth-value" id="depthValue">0</span>
+                                <span class="depth-unit-label" id="depthUnitLabel">m</span>
+                            </div>
+                            <span class="depth-status" id="depthStatus">No Flood</span>
+                        </div>
+
+                        <!-- Unit Selector -->
+                        <div class="unit-selector">
+                            <button type="button" class="unit-btn active" data-unit="meter">Meter</button>
+                            <button type="button" class="unit-btn" data-unit="feet">Feet</button>
+                            <button type="button" class="unit-btn" data-unit="cm">Centimeter</button>
+                        </div>
+
+                        <!-- Water Animation Visualization -->
+                        <div class="depth-visual-container">
+                            <div class="reference-display" id="referenceDisplay">
+                                <img id="referenceImg" src="/static/carsvg.svg" alt="Reference">
+                            </div>
+                            <div class="water-level" id="waterLevel">
+                                <div class="water-wave"></div>
+                            </div>
+                        </div>
+
+                        <div class="depth-controls">
+                            <div class="slider-row">
+                                <span>0</span>
+                                <input type="range" name="flood_depth_cm" id="flood_depth_cm" min="0" max="200"
+                                    value="0">
+                                <span>200</span>
+                            </div>
+                            <div class="depth-input-group">
+                                <label for="depth_input">Depth:</label>
+                                <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
+                                <span id="inputUnit">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Photo</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" onclick="openGallery()"
+                                style="display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                    <path d="m21 15-5-5L5 21" />
+                                </svg>
+                                Gallery
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="openCamera()"
+                                style="display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                </svg>
+                                Camera
+                            </button>
+                        </div>
+                        <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
+                            onchange="handlePhotoSelect(this)">
+                        <input type="file" id="photoGallery" accept="image/*" style="display: none;"
+                            onchange="handlePhotoSelect(this)">
+                        <div id="photoPreview" style="margin-top: 12px; display: none;">
+                            <img id="previewImg"
+                                style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid var(--border);">
+                            <p id="photoName"
+                                style="margin-top: 6px; font-size: 0.85rem; color: var(--text-secondary);"></p>
+                        </div>
+                    </div>
+
+                    <!-- Camera Modal for Mobile -->
+                    <div id="cameraModal"
+                        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 1000;">
+                        <video id="cameraStream" autoplay playsinline
+                            style="width: 100%; height: calc(100% - 80px); object-fit: cover;"></video>
+                        <div
+                            style="position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; gap: 40px;">
+                            <button type="button" onclick="closeCamera()"
+                                style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600;">Cancel</button>
+                            <button type="button" onclick="capturePhoto()"
+                                style="background: white; color: #000; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 24px;">📷</button>
+                        </div>
+                        <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea name="remarks" class="form-textarea" rows="2"
+                            placeholder="Additional observations (optional)"></textarea>
+                    </div>
+
+                    <div class="gps-status" id="gpsStatus">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <circle cx="8" cy="8" r="3" fill="currentColor" />
+                        </svg>
+                        <span id="gpsText">Acquiring GPS...</span>
+                    </div>
+                    <input type="hidden" name="gps_lat" id="gps_lat">
+                    <input type="hidden" name="gps_lon" id="gps_lon">
+                    <input type="hidden" name="gps_accuracy" id="gps_accuracy">
+
+                    <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q"
+                        style="margin: 20px 0;"></div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Report</button>
+                    <div id="formStatus" class="status-msg hidden"></div>
+                </form>
+            </div>
+
+            <!-- Volunteer Page -->
+            <div id="volunteerPage" class="hidden">
+                <h1 class="page-title">Volunteer Portal</h1>
+                <!-- <p class="page-subtitle">Join our disaster response network</p> -->
+
+                <div style="display: flex; gap: 8px; margin-bottom: 24px;">
+                    <button class="btn btn-primary" onclick="showVolunteerTab('register')">Register</button>
+                    <button class="btn btn-outline" onclick="showVolunteerTab('signin')">Sign In</button>
+                </div>
+
+                <div id="volunteerRegister" class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">Volunteer Registration</h3>
+                    <form id="volunteerRegForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Username <span class="required">*</span></label>
+                                <input type="text" name="username" class="form-input" required placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-input" required placeholder="Contact number"
+                                    minlength="10">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Skills/Areas of Interest</label>
+                            <div class="checkbox-group" id="skillsGroup">
+                                <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                                    <input type="checkbox" name="skills" value="Emergency Response">
+                                    <span>Emergency Response</span>
+                                </label>
+                                <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                                    <input type="checkbox" name="skills" value="Data Collection">
+                                    <span>Data Collection</span>
+                                </label>
+                                <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                                    <input type="checkbox" name="skills" value="Community Outreach">
+                                    <span>Community Outreach</span>
+                                </label>
+                                <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                                    <input type="checkbox" name="skills" value="Technical Support">
+                                    <span>Technical Support</span>
+                                </label>
+                                <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                                    <input type="checkbox" name="skills" value="Coordination">
+                                    <span>Coordination</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Availability</label>
+                            <div class="radio-group" id="availabilityGroup">
+                                <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                                    <input type="radio" name="availability" value="weekdays">
+                                    <span>Weekdays</span>
+                                </label>
+                                <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                                    <input type="radio" name="availability" value="weekends">
+                                    <span>Weekends</span>
+                                </label>
+                                <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                                    <input type="radio" name="availability" value="both">
+                                    <span>Both</span>
+                                </label>
+                                <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                                    <input type="radio" name="availability" value="emergency">
+                                    <span>Emergency Only</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Register as Volunteer</button>
+                        <div id="regStatus" class="status-msg hidden"></div>
+                    </form>
+                </div>
+
+                <div id="volunteerSignin" class="card hidden">
+                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">Volunteer Sign In</h3>
+                    <form id="volunteerSigninForm">
+                        <div class="form-group">
+                            <label>Phone Number <span class="required">*</span></label>
+                            <input type="tel" name="phone" class="form-input" required
+                                placeholder="Registered phone number">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                        <div id="signinStatus" class="status-msg hidden"></div>
+                    </form>
+                </div>
+
+                <div id="volunteerDashboard" class="card hidden">
+                    <h3>Welcome, <span id="volName"></span>!</h3>
+                    <p style="color: var(--text-secondary); margin: 8px 0;">Skills: <span id="volSkills"></span></p>
+                    <p style="color: var(--text-secondary);">Availability: <span id="volAvail"></span></p>
+                    <button class="btn btn-outline" style="margin-top: 16px;" onclick="volunteerSignout()">Sign
+                        Out</button>
+                </div>
+            </div>
+
+            <!-- About Page -->
+            <div id="aboutPage" class="hidden">
+                <h1 class="page-title">AIResQ ClimSols</h1>
+                <p class="page-subtitle">Rain2Resilience</p>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">Our Mission</h3>
+                    <p style="color: var(--text-secondary);">AIResQ ClimSols is dedicated to leveraging technology and
+                        community participation for effective disaster response. Our crowdsourced flood monitoring
+                        platform enables real-time data collection to help emergency responders and communities make
+                        informed decisions.</p>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">How It Works</h3>
+                    <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.8;">
+                        <li>Citizens report flood depths using visual reference objects</li>
+                        <li>GPS-tagged reports are collected and verified</li>
+                        <li>Data is analyzed for actionable insights</li>
+                        <li>Volunteers coordinate response efforts</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">Contact</h3>
+                    <p style="color: var(--text-secondary);">For inquiries, partnerships, or support, please reach out
+                        to our team.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">© 2025 AIResQ ClimSols. All rights reserved.</div>
+    </footer>
+
+    <script>
+        // Reference depth labels (in cm) – scaled & physically consistent
+        const depthLabels = {
+            car: [
+                { depth: 0, label: 'No Flood' },
+                { depth: 18, label: 'Ground clearance' },
+                { depth: 35, label: 'Exhaust / underbody risk' },
+                { depth: 60, label: 'Door sill level' },
+                { depth: 95, label: 'Window level' },
+                { depth: 150, label: 'Roof level' }
+            ],
+            autorickshaw: [
+                { depth: 0, label: 'No Flood' },
+                { depth: 15, label: 'Ground clearance' },
+                { depth: 35, label: 'Wheel hub level' },
+                { depth: 50, label: 'Floor level' },
+                { depth: 75, label: 'Seat level' },
+                { depth: 165, label: 'Roof level' }
+            ],
+            bike: [
+                { depth: 0, label: 'No Flood' },
+                { depth: 15, label: 'Ground clearance' },
+                { depth: 45, label: 'Wheel hub level' },
+                { depth: 60, label: 'Engine intake risk' },
+                { depth: 90, label: 'Seat level' },
+                { depth: 125, label: 'Handlebar level' }
+            ],
+            cycle: [
+                { depth: 0, label: 'No Flood' },
+                { depth: 10, label: 'Ground level' },
+                { depth: 25, label: 'Wheel hub level' },
+                { depth: 45, label: 'Pedal level' },
+                { depth: 90, label: 'Seat level' },
+                { depth: 110, label: 'Handlebar level' }
+            ],
+            person: [
+                { depth: 0, label: 'No Flood' },
+                { depth: 25, label: 'Ankle level' },
+                { depth: 45, label: 'Knee level' },
+                { depth: 75, label: 'Mid-thigh level' },
+                { depth: 100, label: 'Waist level' },
+                { depth: 135, label: 'Chest level' },
+                { depth: 155, label: 'Neck level' },
+                { depth: 180, label: 'Fully submerged (6 ft person)' }
+            ]
+        };
+
+
+        const referenceImages = {
+            car: '/static/carsvg.svg',
+            autorickshaw: '/static/autorickshaw.svg',
+            bike: '/static/bikesvg.svg',
+            cycle: '/static/bicycle.svg',
+            // house: '/static/house.webp',
+            person: '/static/person.svg'
+        };
+
+        // Configurable image sizes for each reference object type (width, height in pixels)
+        const referenceImageSizes = {
+            car: { width: 400, height: 280 },
+            autorickshaw: { width: 230, height: 230 },
+            bike: { width: 270, height: 180 },
+            cycle: { width: 250, height: 170 },
+            // house: { width: 200, height: 200 },
+            person: { width: 200, height: 200 }
+        };
+
+        let selectedReference = 'car';
+        let currentUnit = 'meter'; // Default unit
+        let depthInCm = 0;
+
+        // Unit conversion helpers
+        function cmToDisplay(cm, unit) {
+            switch (unit) {
+                case 'meter': return (cm / 100).toFixed(2).toString();
+                case 'feet': return (cm / 30.48).toFixed(2).toString();
+                case 'cm': return cm.toString();
+            }
+        }
+
+        function displayToCm(value, unit) {
+            switch (unit) {
+                case 'meter': return Math.round(value * 100);
+                case 'feet': return Math.round(value * 30.48);
+                case 'cm': return Math.round(value);
+            }
+        }
+
+        function getUnitLabel(unit) {
+            switch (unit) {
+                case 'meter': return 'm';
+                case 'feet': return 'ft';
+                case 'cm': return 'cm';
+            }
+        }
+
+        // Page navigation
+        function showPage(page) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('crowdsourcePage').classList.add('hidden');
+            document.getElementById('volunteerPage').classList.add('hidden');
+            document.getElementById('aboutPage').classList.add('hidden');
+            document.getElementById(page + 'Page').classList.remove('hidden');
+        }
+
+        // Request permissions on page load
+        async function requestPermissions() {
+            // Request location permission
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        document.getElementById('gps_lat').value = pos.coords.latitude;
+                        document.getElementById('gps_lon').value = pos.coords.longitude;
+                        document.getElementById('gps_accuracy').value = pos.coords.accuracy;
+                        document.getElementById('gpsStatus').classList.add('active');
+                        document.getElementById('gpsText').textContent = `GPS: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+                    },
+                    err => {
+                        document.getElementById('gpsText').textContent = 'Location access denied';
+                    },
+                    { enableHighAccuracy: true }
+                );
+            }
+
+            // Request camera permission
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    stream.getTracks().forEach(track => track.stop()); // Stop immediately, just requesting permission
+                } catch (e) {
+                    console.log('Camera permission not granted:', e.message);
+                }
+            }
+        }
+
+        // Call permissions on page load
+        window.addEventListener('DOMContentLoaded', requestPermissions);
+
+        let cameraStream = null;
+
+        // Open gallery
+        function openGallery() {
+            document.getElementById('photoGallery').click();
+        }
+
+        // Open camera using native device camera
+        async function openCamera() {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraStream');
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                video.srcObject = cameraStream;
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } catch (e) {
+                alert('Camera access denied. Please allow camera access in your browser settings.');
+            }
+        }
+
+        // Close camera
+        function closeCamera() {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraStream');
+
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            video.srcObject = null;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Capture photo from camera
+        function capturePhoto() {
+            const video = document.getElementById('cameraStream');
+            const canvas = document.getElementById('cameraCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            canvas.toBlob(blob => {
+                const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('photo').files = dt.files;
+
+                showPhotoPreview(file);
+                closeCamera();
+            }, 'image/jpeg', 0.9);
+        }
+
+        // Photo selection handler
+        function handlePhotoSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const mainInput = document.getElementById('photo');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                mainInput.files = dt.files;
+                showPhotoPreview(file);
+            }
+        }
+
+        // Show photo preview
+        function showPhotoPreview(file) {
+            const preview = document.getElementById('photoPreview');
+            const previewImg = document.getElementById('previewImg');
+            const photoName = document.getElementById('photoName');
+            previewImg.src = URL.createObjectURL(file);
+            photoName.textContent = file.name;
+            preview.style.display = 'block';
+        }
+
+        // Volunteer tabs
+        function showVolunteerTab(tab) {
+            document.getElementById('volunteerRegister').classList.add('hidden');
+            document.getElementById('volunteerSignin').classList.add('hidden');
+            document.getElementById('volunteerDashboard').classList.add('hidden');
+            if (tab === 'register') document.getElementById('volunteerRegister').classList.remove('hidden');
+            else if (tab === 'signin') document.getElementById('volunteerSignin').classList.remove('hidden');
+        }
+
+        // Checkbox toggle - fixed for proper click handling
+        function toggleCheckbox(el, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            el.classList.toggle('checked');
+            const checkbox = el.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = el.classList.contains('checked');
+        }
+
+        // Radio select
+        function selectRadio(el, name, event) {
+            if (event) event.stopPropagation();
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                const parent = r.closest('.radio-item');
+                if (parent) parent.classList.remove('selected');
+            });
+            el.classList.add('selected');
+            const radio = el.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        }
+
+        // Reference selector
+        document.querySelectorAll('.reference-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.reference-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                selectedReference = opt.dataset.type;
+                document.getElementById('vehicle_type').value = selectedReference;
+
+                const refImg = document.getElementById('referenceImg');
+                const refDisplay = document.getElementById('referenceDisplay');
+                if (refImg && referenceImages[selectedReference]) {
+                    refImg.src = referenceImages[selectedReference];
+                    // Apply configurable image sizes
+                    const sizes = referenceImageSizes[selectedReference] || { width: 180, height: 180 };
+                    refDisplay.style.width = sizes.width + 'px';
+                    refDisplay.style.height = sizes.height + 'px';
+                }
+
+                updateDepthDisplay(depthInCm);
+            });
+        });
+
+        // Unit selector
+        document.querySelectorAll('.unit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentUnit = btn.dataset.unit;
+                // Update step and max based on unit
+                const depthInput = document.getElementById('depth_input');
+                switch (currentUnit) {
+                    case 'meter':
+                        depthInput.step = '0.01';
+                        depthInput.max = '2';
+                        break;
+                    case 'feet':
+                        depthInput.step = '0.1';
+                        depthInput.max = '6.56';
+                        break;
+                    case 'cm':
+                        depthInput.step = '1';
+                        depthInput.max = '200';
+                        break;
+                }
+                updateDepthDisplay(depthInCm);
+            });
+        });
+
+        // Depth controls
+        const depthSlider = document.getElementById('flood_depth_cm');
+        const depthInput = document.getElementById('depth_input');
+        const waterLevel = document.getElementById('waterLevel');
+
+        depthSlider.addEventListener('input', e => {
+            depthInCm = parseInt(e.target.value);
+            updateDepthDisplay(depthInCm);
+        });
+
+        depthInput.addEventListener('input', e => {
+            const value = parseFloat(e.target.value) || 0;
+            depthInCm = displayToCm(value, currentUnit);
+            depthInCm = Math.max(0, Math.min(200, depthInCm));
+            depthSlider.value = depthInCm;
+            updateDepthDisplay(depthInCm);
+        });
+
+        function updateDepthDisplay(cm) {
+            // Update display value
+            const displayValue = cmToDisplay(cm, currentUnit);
+            document.getElementById('depthValue').textContent = displayValue;
+            document.getElementById('depthUnitLabel').textContent = getUnitLabel(currentUnit);
+            document.getElementById('inputUnit').textContent = getUnitLabel(currentUnit);
+
+            // Update input field
+            if (document.activeElement !== depthInput) {
+                depthInput.value = displayValue;
+            }
+
+            // Update status label
+            const labels = depthLabels[selectedReference];
+            let status = labels[0].label;
+            for (let i = labels.length - 1; i >= 0; i--) {
+                if (cm >= labels[i].depth) { status = labels[i].label; break; }
+            }
+            document.getElementById('depthStatus').textContent = status;
+
+            // Animate water level
+            const maxDepth = selectedReference === 'house' ? 250 : 200;
+            const waterHeight = Math.min((cm / maxDepth) * 100, 100);
+            if (waterLevel) {
+                waterLevel.style.height = waterHeight + '%';
+            }
+
+            // Update status badge color
+            const statusEl = document.getElementById('depthStatus');
+            if (cm === 0) {
+                statusEl.style.background = 'var(--primary-dim)';
+                statusEl.style.color = 'var(--primary)';
+            } else if (cm < 50) {
+                statusEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                statusEl.style.color = 'var(--success)';
+            } else if (cm < 100) {
+                statusEl.style.background = 'rgba(245, 158, 11, 0.15)';
+                statusEl.style.color = 'var(--warning)';
+            } else {
+                statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+                statusEl.style.color = 'var(--error)';
+            }
+        }
+
+        // GPS
+        function initGPS() {
+            if (!navigator.geolocation) {
+                document.getElementById('gpsText').textContent = 'GPS not supported';
+                return;
+            }
+            navigator.geolocation.watchPosition(pos => {
+                document.getElementById('gps_lat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('gps_lon').value = pos.coords.longitude.toFixed(6);
+                document.getElementById('gps_accuracy').value = pos.coords.accuracy.toFixed(2);
+                document.getElementById('gpsText').textContent = `Location: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} (±${pos.coords.accuracy.toFixed(0)}m)`;
+                document.getElementById('gpsStatus').classList.add('active');
+            }, err => {
+                document.getElementById('gpsText').textContent = 'GPS unavailable';
+                fallbackIP();
+            }, { enableHighAccuracy: true, timeout: 30000 });
+        }
+
+        async function fallbackIP() {
+            try {
+                const r = await fetch('https://ipapi.co/json/');
+                const d = await r.json();
+                if (d.latitude) {
+                    document.getElementById('gps_lat').value = d.latitude;
+                    document.getElementById('gps_lon').value = d.longitude;
+                    document.getElementById('gps_accuracy').value = 5000;
+                    document.getElementById('gpsText').textContent = `Approx: ${d.city || 'Detected'}`;
+                    if (d.city) document.getElementById('zone').value = d.city;
+                }
+            } catch (e) { }
+        }
+
+        // reCAPTCHA is handled by Google's script, no manual fetch needed
+
+        // Report form submit
+        document.getElementById('reportForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const status = document.getElementById('formStatus');
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Submitting...';
+
+            try {
+                const formData = new FormData(e.target);
+                const r = await fetch('/api/submit', { method: 'POST', body: formData });
+                const d = await r.json();
+                if (d.ok) {
+                    status.textContent = '✓ Report submitted successfully!';
+                    status.className = 'status-msg success';
+                    e.target.reset();
+                    // Reset reCAPTCHA
+                    if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+                    document.getElementById('flood_depth_cm').value = 0;
+                    depthInCm = 0;
+                    updateDepthDisplay(0);
+
+                    // Reset reference selector
+                    document.querySelectorAll('.reference-option').forEach(o => o.classList.remove('selected'));
+                    document.querySelector('.reference-option[data-type="car"]').classList.add('selected');
+                    selectedReference = 'car';
+                    document.getElementById('referenceImg').src = referenceImages['car'];
+
+                    // Clear photo preview and file inputs
+                    document.getElementById('photoPreview').style.display = 'none';
+                    document.getElementById('previewImg').src = '';
+                    document.getElementById('photo').value = '';
+                    document.getElementById('photoGallery').value = '';
+                } else throw new Error(d.error);
+            } catch (err) {
+                status.textContent = '✗ ' + err.message;
+                status.className = 'status-msg error';
+            }
+            status.classList.remove('hidden');
+            btn.disabled = false; btn.textContent = 'Submit Report';
+        });
+
+        // Volunteer registration
+        document.getElementById('volunteerRegForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const status = document.getElementById('regStatus');
+            const skills = Array.from(document.querySelectorAll('#skillsGroup input:checked')).map(i => i.value);
+            const availability = document.querySelector('input[name="availability"]:checked')?.value || '';
+
+            try {
+                const r = await fetch('/api/volunteer/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: e.target.username.value,
+                        phone: e.target.phone.value,
+                        skills, availability
+                    })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    status.textContent = '✓ Registration successful! You can now sign in.';
+                    status.className = 'status-msg success';
+                    e.target.reset();
+                    document.querySelectorAll('.checkbox-item').forEach(c => c.classList.remove('checked'));
+                    document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+                } else throw new Error(d.error);
+            } catch (err) {
+                status.textContent = '✗ ' + err.message;
+                status.className = 'status-msg error';
+            }
+            status.classList.remove('hidden');
+        });
+
+        // Volunteer sign in
+        document.getElementById('volunteerSigninForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const status = document.getElementById('signinStatus');
+            try {
+                const r = await fetch('/api/volunteer/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: e.target.phone.value })
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    document.getElementById('volunteerSignin').classList.add('hidden');
+                    document.getElementById('volunteerDashboard').classList.remove('hidden');
+                    document.getElementById('volName').textContent = d.volunteer.username;
+                    document.getElementById('volSkills').textContent = d.volunteer.skills?.join(', ') || 'None';
+                    document.getElementById('volAvail').textContent = d.volunteer.availability || 'Not set';
+                } else throw new Error(d.error);
+            } catch (err) {
+                status.textContent = '✗ ' + err.message;
+                status.className = 'status-msg error';
+                status.classList.remove('hidden');
+            }
+        });
+
+        function volunteerSignout() {
+            document.getElementById('volunteerDashboard').classList.add('hidden');
+            document.getElementById('volunteerSignin').classList.remove('hidden');
+            document.getElementById('signinStatus').classList.add('hidden');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initGPS();
+            // Apply initial image sizes for default reference (car)
+            const refDisplay = document.getElementById('referenceDisplay');
+            const sizes = referenceImageSizes[selectedReference] || { width: 200, height: 200 };
+            refDisplay.style.width = sizes.width + 'px';
+            refDisplay.style.height = sizes.height + 'px';
+        });
+    </script>
+</body>
+
+</html>
