@@ -12,4 +12,5 @@ RUN mkdir -p crowd_data/submissions crowd_data/images crowd_data/thumbnails crow
 
 EXPOSE 8005
 
-CMD ["python", "app.py"]
+# Run the application with Gunicorn for production stability
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "app:app"]
