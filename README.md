@@ -19,6 +19,18 @@ Minimal, field-usable platform to collect flood depth + photo proofs from citize
    ```
    The application will be available at `http://localhost:8005`.
 
+## Docker Usage
+
+1. **Build the Image**:
+   ```bash
+   docker build -t airesq-crowdsourcing .
+   ```
+
+2. **Run the Container**:
+   ```bash
+   docker run -p 8005:8005 --env-file .env -v ${PWD}/crowd_data:/app/crowd_data airesq-crowdsourcing
+   ```
+
 ## Public Submission
 - **Mobile-First**: Optimized for field use.
 - **Required Fields**: Name, phone, flood depth (slider), photo proof, and simple captcha.
