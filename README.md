@@ -4,38 +4,48 @@ Minimal, field-usable platform to collect flood depth + photo proofs from citize
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and fill values.
-2. Install deps and run the server:
+1. **Setup Environment**:
+   - Copy `.env.example` to `.env`
+   - Fill in the required values (especially `ADMIN_USER`, `ADMIN_PASS`, and API keys if using X/OpenRouter features).
 
-```bash
-npm install
-npm run start
-```
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Open http://localhost:3000
+3. **Run the Server**:
+   ```bash
+   python app.py
+   ```
+   The application will be available at `http://localhost:8005`.
 
 ## Public Submission
-- No auth; mobile-first form
-- Required: Name, phone, flood depth slider, photo, captcha
-- Optional: street, zone, ward, vehicle type, remarks
-- Auto-captures GPS and timestamp
+- **Mobile-First**: Optimized for field use.
+- **Required Fields**: Name, phone, flood depth (slider), photo proof, and simple captcha.
+- **Optional Fields**: Street, zone, ward, vehicle type, and remarks.
+- **Auto-Capture**: Automatically records GPS coordinates and timestamps.
 
-## Storage
-- JSON: `crowd_data/submissions/<id>.json`
-- Images: `crowd_data/images/<filename>`
-- Intelligence (X crawl + LLM): `crowd_data/intel/*.json`
+## Storage Structure
+- **Submissions**: `crowd_data/submissions/<id>.json`
+- **Images**: `crowd_data/images/<filename>`
+- **Thumbnails**: `crowd_data/thumbnails/<filename>`
+- **Intelligence**: `crowd_data/intel/*.json` (X crawl + LLM extraction)
+- **Volunteers**: `crowd_data/volunteers/*.json`
+- **Scraped News**: `crowd_data/scraped_news/*.json`
 
-## Admin
-- Basic Auth (`ADMIN_USER`/`ADMIN_PASS`)
-- Review submissions, export JSON/CSV
-- Crawl X with predefined hashtags
-- Summarize/extract useful flood info via OpenRouter
+## Admin Features
+- **Authentication**: Protected by `ADMIN_USER` and `ADMIN_PASS`.
+- **Data Management**: Review submissions, view photos, and export data to JSON/CSV.
+- **X (Twitter) Integration**: Crawl X for flood-related hashtags.
+- **AI Extraction**: Use OpenRouter to summarize and extract structured info from news and social media.
 
-## Environment
-- `ADMIN_USER`, `ADMIN_PASS`
-- `CAPTCHA_SECRET`
-- `X_BEARER_TOKEN` (X API v2)
-- `OPENROUTER_API_KEY`, optional `OPENROUTER_MODEL`
+## Environment Variables
+- `ADMIN_USER` / `ADMIN_PASS`: Admin dashboard credentials.
+- `CAPTCHA_SECRET`: Secret for the built-in simple captcha.
+- `JWT_SECRET`: Secret for signing session tokens.
+- `X_BEARER_TOKEN`: X API v2 Bearer Token for crawling.
+- `OPENROUTER_API_KEY`: API key for OpenRouter (GenAI features).
+- `AI_API_BASE`: Base URL for local AI services if applicable.
 
 ## Notes
 - Designed for reliability and clarity; no heavy dashboards.
