@@ -201,7 +201,7 @@ def submit():
         phone = request.form.get('phone', '').strip()
         street = request.form.get('street', '').strip()
         zone = request.form.get('zone', '').strip()
-        ward = request.form.get('ward', '').strip()
+        # ward = request.form.get('ward', '').strip()
         vehicle_type = request.form.get('vehicle_type', '').strip()
         flood_depth_cm = request.form.get('flood_depth_cm', '').strip()
         remarks = request.form.get('remarks', '').strip()
@@ -265,7 +265,7 @@ def submit():
             'phone': phone,
             'street': street,
             'zone': zone,
-            'ward': ward,
+            # 'ward': ward,
             'vehicle_type': vehicle_type,
             'flood_depth_cm': depth_num,
             'remarks': remarks,
@@ -324,7 +324,7 @@ def admin_submissions():
                     'id': obj['id'],
                     'name': obj['name'],
                     'phone': obj['phone'],
-                    'ward': obj.get('ward', ''),
+                    # 'ward': obj.get('ward', ''),
                     'zone': obj.get('zone', ''),
                     'street': obj.get('street', ''),
                     'vehicle_type': obj.get('vehicle_type', ''),
@@ -403,14 +403,14 @@ def admin_export_csv():
         
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(['id', 'name', 'phone', 'street', 'zone', 'ward', 'vehicle_type', 
+        writer.writerow(['id', 'name', 'phone', 'street', 'zone', 'vehicle_type', 
                         'flood_depth_cm', 'remarks', 'gps_lat', 'gps_lon', 'gps_accuracy', 
                         'image_path', 'received_at'])
         
         for item in items:
             writer.writerow([
                 item['id'], item['name'], item['phone'], item.get('street', ''),
-                item.get('zone', ''), item.get('ward', ''), item.get('vehicle_type', ''),
+                item.get('zone', ''), item.get('vehicle_type', ''),
                 item['flood_depth_cm'], item.get('remarks', ''),
                 item.get('gps', {}).get('lat', ''), item.get('gps', {}).get('lon', ''),
                 item.get('gps', {}).get('accuracy', ''), item['image_path'], item['received_at']

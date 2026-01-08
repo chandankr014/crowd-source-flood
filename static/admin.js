@@ -194,7 +194,7 @@ function displaySubmissions(items) {
             ${imgHtml}
             <div class="submission-info" style="flex: 1;">
                 <h4>${item.name || 'Anonymous'} ${item.phone ? '- ' + item.phone : ''}</h4>
-                <p><strong>Location:</strong> ${[item.street, item.zone, item.ward].filter(Boolean).join(', ') || 'Not specified'}</p>
+                <p><strong>Location:</strong> ${[item.street, item.zone].filter(Boolean).join(', ') || 'Not specified'}</p>
                 <p><strong>Reference:</strong> ${item.vehicle_type || 'N/A'} | <strong>Depth:</strong> ${item.flood_depth_cm} cm</p>
                 <p><strong>GPS:</strong> ${item.gps?.lat?.toFixed(5) || 'N/A'}, ${item.gps?.lon?.toFixed(5) || 'N/A'}</p>
                 <p><strong>Submitted:</strong> ${new Date(item.received_at).toLocaleString()}</p>
@@ -240,8 +240,8 @@ function filterSubmissions() {
             item.phone.includes(searchTerm) ||
             item.id.toLowerCase().includes(searchTerm) ||
             (item.street && item.street.toLowerCase().includes(searchTerm)) ||
-            (item.zone && item.zone.toLowerCase().includes(searchTerm)) ||
-            (item.ward && item.ward.toLowerCase().includes(searchTerm));
+            (item.zone && item.zone.toLowerCase().includes(searchTerm));
+            // (item.ward && item.ward.toLowerCase().includes(searchTerm));
     });
 
     displaySubmissions(filtered);
@@ -779,7 +779,7 @@ function openModal(submissionId) {
     document.getElementById('modalImage').src = '/' + item.image_path;
     document.getElementById('modalName').textContent = item.name;
     document.getElementById('modalPhone').textContent = item.phone;
-    document.getElementById('modalLocation').textContent = [item.street, item.zone, item.ward].filter(Boolean).join(', ') || 'Not specified';
+    document.getElementById('modalLocation').textContent = [item.street, item.zone].filter(Boolean).join(', ') || 'Not specified';
     document.getElementById('modalVehicle').textContent = item.vehicle_type || 'N/A';
     document.getElementById('modalDepth').textContent = item.flood_depth_cm;
     document.getElementById('modalGPS').textContent = item.gps?.lat ? `${item.gps.lat}, ${item.gps.lon} (±${item.gps.accuracy || '?'}m)` : 'N/A';
