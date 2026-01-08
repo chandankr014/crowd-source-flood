@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="as">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | AIResQ ClimSols</title>
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo-text">
+                    <h1>AIResQ ClimSols</h1>
+                </div>
+            </div>
+            <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Language Selector -->
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-btn" onclick="toggleLangMenu(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M2 12h20"></path>
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                            </path>
+                        </svg>
+                        <span>অ</span>
+                    </button>
+                    <div class="lang-menu">
+                        <button class="lang-menu-item" data-lang="en" onclick="switchLanguage('en')">English</button>
+                        <button class="lang-menu-item" data-lang="hn" onclick="switchLanguage('hn')">हिंदी
+                            (Hindi)</button>
+                        <div class="lang-menu-divider"></div>
+                        <div class="lang-submenu-wrapper" id="indicSubmenu">
+                            <button class="lang-menu-item" onclick="toggleIndicSubmenu(event)">
+                                Indic Languages
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                            <div class="lang-submenu">
+                                <button class="lang-menu-item" data-lang="bn"
+                                    onclick="switchLanguage('bn')">বাংলা</button>
+                                <button class="lang-menu-item" data-lang="ta"
+                                    onclick="switchLanguage('ta')">தமிழ்</button>
+                                <button class="lang-menu-item" data-lang="te"
+                                    onclick="switchLanguage('te')">తెలుగు</button>
+                                <button class="lang-menu-item" data-lang="mr"
+                                    onclick="switchLanguage('mr')">मराठी</button>
+                                <button class="lang-menu-item" data-lang="gu"
+                                    onclick="switchLanguage('gu')">ગુજરાતી</button>
+                                <button class="lang-menu-item" data-lang="kn"
+                                    onclick="switchLanguage('kn')">ಕನ್ನಡ</button>
+                                <button class="lang-menu-item" data-lang="ml"
+                                    onclick="switchLanguage('ml')">മലയാളം</button>
+                                <button class="lang-menu-item" data-lang="pa"
+                                    onclick="switchLanguage('pa')">ਪੰਜਾਬੀ</button>
+                                <button class="lang-menu-item" data-lang="or"
+                                    onclick="switchLanguage('or')">ଓଡ଼ିଆ</button>
+                                <button class="lang-menu-item" data-lang="as"
+                                    onclick="switchLanguage('as')">অসমীয়া</button>
+                                <button class="lang-menu-item" data-lang="ur"
+                                    onclick="switchLanguage('ur')">اردو</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="/" class="back-btn">
+                    ← Back to Portal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="admin-section">
+        <div class="container">
+            <!-- Auth Card (Login) -->
+            <div id="authCard" class="auth-card">
+                <h2>Admin Login</h2>
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="admin_user">Username</label>
+                        <input type="text" id="admin_user" placeholder="Enter admin username">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin_pass">Password</label>
+                        <input type="password" id="admin_pass" placeholder="Enter admin password">
+                    </div>
+                    <button class="auth-btn" onclick="adminConnect()">Login</button>
+                </div>
+                <div id="authStatus" class="auth-status" style="display: none;"></div>
+            </div>
+
+            <!-- Admin Dashboard (Hidden until login) -->
+            <div id="adminControls" class="admin-controls">
+                <!-- Admin Header -->
+                <div class="admin-header">
+                    <h1 class="admin-title">Admin Dashboard</h1>
+                    <button class="btn-outline" onclick="logout()">Sign Out</button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <p class="stat-label">Total Reports</p>
+                        <p id="totalReports" class="stat-value">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Pending Review</p>
+                        <p id="pendingReports" class="stat-value warning">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Critical Areas</p>
+                        <p id="criticalAreas" class="stat-value error">0</p>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Verified</p>
+                        <p id="verifiedReports" class="stat-value success">0</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('submissions')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                        </svg>
+                        Submissions
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('volunteers')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        Volunteers
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('social')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M2 12h20" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        Web/Social Media
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('ai')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+                            <path
+                                d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+                        </svg>
+                        AI Analysis
+                    </button>
+                </div>
+
+                <!-- Submissions Tab -->
+                <div id="submissionsTab">
+                    <!-- Filter Buttons -->
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                        <button class="filter-btn" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                        <button class="filter-btn" data-filter="valid" onclick="setFilter('valid')">Valid</button>
+                        <button class="filter-btn" data-filter="invalid" onclick="setFilter('invalid')">Invalid</button>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search by name, location, or ID..."
+                            onkeyup="filterSubmissions()">
+                        <div class="search-actions">
+                            <button onclick="exportCSV()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" x2="12" y1="15" y2="3" />
+                                </svg>
+                                CSV
+                            </button>
+                            <button onclick="refreshSubmissions()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="submissionsList" class="submissions-list">
+                        <div class="card" style="padding: 3rem; text-align: center;">
+                            <p style="color: var(--text-secondary);">Loading submissions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volunteers Tab -->
+                <div id="volunteersTab" class="hidden">
+                    <div class="search-bar">
+                        <input type="text" id="volunteerSearchInput" placeholder="Search volunteers by name or phone..."
+                            onkeyup="filterVolunteers()">
+                        <div class="search-actions">
+                            <button onclick="refreshVolunteers()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="volunteersList" class="submissions-list">
+                        <div class="card" style="padding: 3rem; text-align: center;">
+                            <p style="color: var(--text-secondary);">Click Refresh to load volunteers...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Web/Social Media Tab -->
+                <div id="socialTab" class="hidden">
+                    <div class="card placeholder-section">
+                        <svg class="placeholder-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M2 12h20" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        <h3 class="placeholder-title">Web/Social Media Intelligence</h3>
+                        <p class="placeholder-text">Scrape and analyze flood-related content from web and social media
+                            platforms.</p>
+                        <button class="btn-accent" onclick="configureScraper()">Configure Scraper</button>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Tab -->
+                <div id="aiTab" class="hidden">
+                    <!-- Search Section -->
+                    <div class="card" style="padding: 24px; margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2"
+                                style="vertical-align: middle; margin-right: 8px;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                            AI-Powered News Search & Extraction
+                        </h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+                            Search for flood-related news and extract intelligence from web sources.
+                        </p>
+
+                        <!-- Search Form -->
+                        <div class="search-bar" style="margin-bottom: 16px;">
+                            <input type="text" id="aiSearchQuery" placeholder="Enter search query" style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 0.9rem;">
+                                    Max URLs:
+                                    <select id="aiMaxUrls"
+                                        style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-light);">
+                                        <option value="1">1</option>
+                                        <option value="2" selected>2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                </label>
+                                <button class="btn-accent" onclick="performAISearch()" id="aiSearchBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2"
+                                        style="vertical-align: middle; margin-right: 6px;">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search Status -->
+                        <div id="aiSearchStatus"
+                            style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 16px;"></div>
+
+                        <!-- Found URLs with Checkboxes -->
+                        <div id="aiUrlResults" style="display: none;">
+                            <h4 style="margin-bottom: 12px; color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                </svg>
+                                Select URLs to Extract
+                            </h4>
+                            <div id="aiUrlList"
+                                style="background: var(--bg-light); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                            </div>
+                            <button class="btn-accent" onclick="extractFromUrls()" id="aiExtractBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path
+                                        d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z">
+                                    </path>
+                                    <path
+                                        d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z">
+                                    </path>
+                                </svg>
+                                Extract Intelligence
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Extraction Results -->
+                    <div id="aiExtractionResults" class="card"
+                        style="padding: 24px; display: none; margin-bottom: 20px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 8px;">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
+                                    </path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                                </svg>
+                                Extracted News Items
+                            </h3>
+                            <span id="aiExtractionCount"
+                                style="background: var(--primary-teal); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;"></span>
+                        </div>
+                        <div id="aiNewsList" style="margin-bottom: 20px;"></div>
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button class="btn-outline" onclick="discardExtractedNews()"
+                                style="color: var(--error); border-color: var(--error);">
+                                ✗ Discard
+                            </button>
+                            <button class="btn-accent" onclick="confirmSaveNews()" style="background: var(--success);">
+                                ✓ Save to Records
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Saved News History -->
+                    <div class="card" style="padding: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="color: var(--text-primary);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 8px;">
+                                    <path d="M3 3v18h18"></path>
+                                    <path d="m19 9-5 5-4-4-3 3"></path>
+                                </svg>
+                                Saved News Records
+                            </h3>
+                            <button class="btn-outline" onclick="refreshSavedNews()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2"
+                                    style="vertical-align: middle; margin-right: 6px;">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                    <path d="M21 3v5h-5"></path>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                    <path d="M8 16H3v5"></path>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="savedNewsList">
+                            <p style="color: var(--text-secondary); text-align: center; padding: 24px;">No saved news
+                                records yet. Search and extract news to get started.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer
+        style="background: #0A2534; border-top: 1px solid #0A2534; padding: 20px 0; text-align: center; color: #94A3B8; font-size: 0.85rem;">
+        <div class="container">© 2025 AIResQ ClimSols. All rights reserved.</div>
+    </footer>
+
+    <!-- Submission Viewer Modal -->
+    <div id="submissionModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Submission Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" class="modal-image" src="" alt="Submission photo">
+                <p class="modal-detail"><strong>Reporter:</strong> <span id="modalName"></span> (<span
+                        id="modalPhone"></span>)</p>
+                <p class="modal-detail"><strong>Location:</strong> <span id="modalLocation"></span></p>
+                <p class="modal-detail"><strong>Vehicle Ref:</strong> <span id="modalVehicle"></span></p>
+                <p class="modal-detail"><strong>Flood Depth:</strong> <span id="modalDepth"></span> cm</p>
+                <p class="modal-detail"><strong>GPS:</strong> <span id="modalGPS"></span></p>
+                <p class="modal-detail"><strong>Remarks:</strong> <span id="modalRemarks"></span></p>
+                <p class="modal-detail"><strong>Submitted:</strong> <span id="modalTime"></span></p>
+                <p class="modal-detail"><strong>Status:</strong> <span id="modalStatus"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-invalid" onclick="verifySubmission('invalid')">✗ Invalid</button>
+                <button class="btn-valid" onclick="verifySubmission('valid')">✓ Valid</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+</body>
+
+</html>

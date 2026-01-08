@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="kn">
 
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="/static/index.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-
 <body>
     <nav class="navbar">
         <div class="container">
@@ -22,9 +21,9 @@
                 <span>AIResQ ClimSols</span>
             </a>
             <div class="nav-links">
-                <button class="nav-link active" onclick="showPage('crowdsource')">Report Flood</button>
-                <button class="nav-link" onclick="showPage('volunteer')">Volunteer</button>
-                <button class="nav-link" onclick="showPage('about')">About</button>
+                <button class="nav-link active" onclick="showPage('crowdsource')">ಪ್ರವಾಹದ ವರದಿ ಮಾಡಿ</button>
+                <button class="nav-link" onclick="showPage('volunteer')">ಸ್ವಯಂಸೇವಕ</button>
+                <button class="nav-link" onclick="showPage('about')">ನಮ್ಮ ಬಗ್ಗೆ</button>
 
                 <!-- Language Selector -->
                 <div class="lang-dropdown" id="langDropdown">
@@ -37,7 +36,7 @@
                                 d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
                             </path>
                         </svg>
-                        <span>EN</span>
+                        <span>ಕನ್ನಡ</span>
                     </button>
                     <div class="lang-menu">
                         <button class="lang-menu-item" data-lang="en" onclick="switchLanguage('en')">English</button>
@@ -46,7 +45,7 @@
                         <div class="lang-menu-divider"></div>
                         <div class="lang-submenu-wrapper" id="indicSubmenu">
                             <button class="lang-menu-item" onclick="toggleIndicSubmenu(event)">
-                                Indic Languages
+                                ಭಾರತೀಯ ಭಾಷೆಗಳು
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -80,7 +79,7 @@
                     </div>
                 </div>
 
-                <a href="/admin" class="nav-link admin-link">Admin</a>
+                <a href="/admin" class="nav-link admin-link">ನಿರ್ವಾಹಕ</a>
             </div>
         </div>
     </nav>
@@ -89,53 +88,53 @@
         <div class="container">
             <!-- CrowdSource Page -->
             <div id="crowdsourcePage">
-                <h1 class="page-title">Report Flood Depth</h1>
-                <p class="page-subtitle">Help monitor flood levels in your area by submitting a report with a reference photo</p>
+                <h1 class="page-title">ಪ್ರವಾಹದ ಆಳದ ವರದಿ ಮಾಡಿ</h1>
+                <p class="page-subtitle">ಉಲ್ಲೇಖ ಫೋಟೋದೊಂದಿಗೆ ವರದಿಯನ್ನು ಸಲ್ಲಿಸುವ ಮೂಲಕ ನಿಮ್ಮ ಪ್ರದೇಶದಲ್ಲಿ ಪ್ರವಾಹ ಮಟ್ಟಗಳನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲು ಸಹಾಯ ಮಾಡಿ</p>
 
                 <form id="reportForm" class="card" enctype="multipart/form-data">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Name</label>
+                            <label>ಹೆಸರು</label>
                             <input type="text" name="name" class="form-input" placeholder="">
                         </div>
                         <div class="form-group">
-                            <label>Phone</label>
+                            <label>ಫೋನ್</label>
                             <input type="tel" name="phone" id="phone" class="form-input" placeholder="" minlength="10">
                         </div>
                         <div class="form-group">
-                            <label>Street/Locality</label>
+                            <label>ಬೀದಿ/ಪ್ರದೇಶ</label>
                             <input type="text" name="street" id="street" class="form-input" placeholder="">
                         </div>
                         <div class="form-group">
-                            <label>Zone/Area</label>
+                            <label>ವಲಯ/ಪ್ರದೇಶ</label>
                             <input type="text" id="zone" name="zone" class="form-input" placeholder="">
                         </div>
                         <div class="form-group">
-                            <label>Ward</label>
+                            <label>ವಾರ್ಡ್</label>
                             <input type="text" name="ward" class="form-input" placeholder="">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Reference Object</label>
+                        <label>ಉಲ್ಲೇಖ ವಸ್ತು</label>
                         <div class="reference-selector">
-                            <div class="reference-option selected" data-type="car">Car</div>
-                            <div class="reference-option" data-type="autorickshaw">Auto</div>
-                            <div class="reference-option" data-type="bike">Bike</div>
-                            <div class="reference-option" data-type="cycle">Cycle</div>
-                            <div class="reference-option" data-type="person">Person</div>
+                            <div class="reference-option selected" data-type="car">ಕಾರು</div>
+                            <div class="reference-option" data-type="autorickshaw">ಆಟೋ</div>
+                            <div class="reference-option" data-type="bike">ಬೈಕ್</div>
+                            <div class="reference-option" data-type="cycle">ಸೈಕಲ್</div>
+                            <div class="reference-option" data-type="person">ವ್ಯಕ್ತಿ</div>
                         </div>
                         <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
                         
                         <!-- Person Height Adjustment Section -->
                         <div id="heightAdjustmentSection" class="height-adjustment hidden">
                             <div class="height-input-row">
-                                <label for="personHeightFeet">Your Height:</label>
+                                <label for="personHeightFeet">ನಿಮ್ಮ ಎತ್ತರ:</label>
                                 <input type="number" id="personHeightFeet" value="6" min="3" max="7" step="1" class="height-feet">
-                                <span class="height-label">ft</span>
+                                <span class="height-label">ಅಡಿ</span>
                                 <input type="number" id="personHeightInches" value="0" min="0" max="11" step="1" class="height-inches">
-                                <span class="height-label">in</span>
-                                <span class="height-cm-display">(183 cm)</span>
+                                <span class="height-label">ಇಂಚು</span>
+                                <span class="height-cm-display">(183 ಸೆಂ.ಮೀ.)</span>
                             </div>
                             <div class="height-presets">
                                 <button type="button" class="height-preset" data-feet="5" data-inches="0">5'0"</button>
@@ -144,7 +143,7 @@
                                 <button type="button" class="height-preset active" data-feet="6" data-inches="0">6'0"</button>
                                 <button type="button" class="height-preset" data-feet="6" data-inches="2">6'2"</button>
                             </div>
-                            <p class="height-calibration-note">Default: 6 feet (183 cm). Adjust to match your height for accurate depth calculation.</p>
+                            <p class="height-calibration-note">ಡೀಫಾಲ್ಟ್: 6 ಅಡಿ (183 ಸೆಂ.ಮೀ.)। ನಿಖರವಾದ ಆಳದ ಲೆಕ್ಕಾಚಾರಕ್ಕಾಗಿ ನಿಮ್ಮ ಎತ್ತರಕ್ಕೆ ತಕ್ಕಂತೆ ಹೊಂದಿಸಿ।</p>
                         </div>
                     </div>
 
@@ -152,22 +151,22 @@
                         <div class="depth-header">
                             <div class="depth-display">
                                 <span class="depth-value" id="depthValue">0</span>
-                                <span class="depth-unit-label" id="depthUnitLabel">m</span>
+                                <span class="depth-unit-label" id="depthUnitLabel">ಮೀ</span>
                             </div>
-                            <span class="depth-status" id="depthStatus">No Flood</span>
+                            <span class="depth-status" id="depthStatus">ಪ್ರವಾಹವಿಲ್ಲ</span>
                         </div>
 
                         <!-- Unit Selector -->
                         <div class="unit-selector">
-                            <button type="button" class="unit-btn active" data-unit="meter">Meter</button>
-                            <button type="button" class="unit-btn" data-unit="feet">Feet</button>
-                            <button type="button" class="unit-btn" data-unit="cm">cm</button>
+                            <button type="button" class="unit-btn active" data-unit="meter">ಮೀಟರ್</button>
+                            <button type="button" class="unit-btn" data-unit="feet">ಅಡಿ</button>
+                            <button type="button" class="unit-btn" data-unit="cm">ಸೆಂ.ಮೀ.</button>
                         </div>
 
                         <!-- Water Animation Visualization -->
                         <div class="depth-visual-container">
                             <div class="reference-display" id="referenceDisplay">
-                                <img id="referenceImg" src="/static/carsvg.svg" alt="Reference">
+                                <img id="referenceImg" src="/static/carsvg.svg" alt="ಉಲ್ಲೇಖ">
                             </div>
                             <div class="water-level" id="waterLevel">
                                 <div class="water-wave"></div>
@@ -182,15 +181,15 @@
                                 <span>200</span>
                             </div>
                             <div class="depth-input-group">
-                                <label for="depth_input">Depth:</label>
+                                <label for="depth_input">ಆಳ:</label>
                                 <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
-                                <span id="inputUnit">m</span>
+                                <span id="inputUnit">ಮೀ</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Photo</label>
+                        <label>ಫೋಟೋ</label>
                         <div class="photo-buttons">
                             <button type="button" class="btn btn-primary" onclick="openGallery()">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -199,7 +198,7 @@
                                     <circle cx="8.5" cy="8.5" r="1.5" />
                                     <path d="m21 15-5-5L5 21" />
                                 </svg>
-                                Gallery
+                                ಗ್ಯಾಲರಿ
                             </button>
                             <button type="button" class="btn btn-primary" onclick="openCamera()">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -208,7 +207,7 @@
                                         d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                                     <circle cx="12" cy="13" r="4" />
                                 </svg>
-                                Camera
+                                ಕ್ಯಾಮೆರಾ
                             </button>
                         </div>
                         <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
@@ -228,7 +227,7 @@
                         <video id="cameraStream" autoplay playsinline></video>
                         <div class="camera-controls">
                             <button type="button" onclick="closeCamera()"
-                                style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600;">Cancel</button>
+                                style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600;">ರದ್ದುಮಾಡಿ</button>
                             <button type="button" onclick="capturePhoto()"
                                 style="background: white; color: #000; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 24px;">📷</button>
                         </div>
@@ -236,16 +235,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Remarks</label>
+                        <label>ಟಿಪ್ಪಣಿಗಳು</label>
                         <textarea name="remarks" class="form-textarea" rows="2"
-                            placeholder="Additional observations (optional)"></textarea>
+                            placeholder="ಹೆಚ್ಚುವರಿ ಅವಲೋಕನಗಳು (ಐಚ್ಛಿಕ)"></textarea>
                     </div>
 
                     <div class="gps-status" id="gpsStatus">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <circle cx="8" cy="8" r="3" fill="currentColor" />
                         </svg>
-                        <span id="gpsText">Acquiring GPS...</span>
+                        <span id="gpsText">GPS ಪಡೆಯುತ್ತಿದೆ...</span>
                     </div>
                     <input type="hidden" name="gps_lat" id="gps_lat">
                     <input type="hidden" name="gps_lon" id="gps_lon">
@@ -254,137 +253,134 @@
                     <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q"
                         style="margin: 20px 0;"></div>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Report</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">ವರದಿ ಸಲ್ಲಿಸಿ</button>
                     <div id="formStatus" class="status-msg hidden"></div>
                 </form>
             </div>
 
             <!-- Volunteer Page -->
             <div id="volunteerPage" class="hidden">
-                <h1 class="page-title">Volunteer Portal</h1>
+                <h1 class="page-title">ಸ್ವಯಂಸೇವಕ ಪೋರ್ಟಲ್</h1>
 
                 <div style="display: flex; gap: 8px; margin-bottom: 24px;">
-                    <button class="btn btn-primary" onclick="showVolunteerTab('register')">Register</button>
-                    <button class="btn btn-outline" onclick="showVolunteerTab('signin')">Sign In</button>
+                    <button class="btn btn-primary" onclick="showVolunteerTab('register')">ನೋಂದಣಿ ಮಾಡಿ</button>
+                    <button class="btn btn-outline" onclick="showVolunteerTab('signin')">ಸೈನ್ ಇನ್ ಮಾಡಿ</button>
                 </div>
 
                 <div id="volunteerRegister" class="card">
-                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">Volunteer Registration</h3>
+                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">ಸ್ವಯಂಸೇವಕ ನೋಂದಣಿ</h3>
                     <form id="volunteerRegForm">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>Username <span class="required">*</span></label>
-                                <input type="text" name="username" class="form-input" required placeholder="Your name">
+                                <label>ಬಳಕೆದಾರ ಹೆಸರು <span class="required">*</span></label>
+                                <input type="text" name="username" class="form-input" required placeholder="ನಿಮ್ಮ ಹೆಸರು">
                             </div>
                             <div class="form-group">
-                                <label>Phone Number <span class="required">*</span></label>
-                                <input type="tel" name="phone" class="form-input" required placeholder="Contact number"
+                                <label>ಫೋನ್ ಸಂಖ್ಯೆ <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-input" required placeholder="ಸಂಪರ್ಕ ಸಂಖ್ಯೆ"
                                     minlength="10">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Skills/Areas of Interest</label>
+                            <label>ಕೌಶಲ್ಯಗಳು/ಆಸಕ್ತಿಯ ಕ್ಷೇತ್ರಗಳು</label>
                             <div class="checkbox-group" id="skillsGroup">
                                 <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
                                     <input type="checkbox" name="skills" value="Emergency Response">
-                                    <span>Emergency Response</span>
+                                    <span>ತುರ್ತು ಪ್ರತಿಕ್ರಿಯೆ</span>
                                 </label>
                                 <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
                                     <input type="checkbox" name="skills" value="Data Collection">
-                                    <span>Data Collection</span>
+                                    <span>ಡೇಟಾ ಸಂಗ್ರಹಣೆ</span>
                                 </label>
                                 <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
                                     <input type="checkbox" name="skills" value="Community Outreach">
-                                    <span>Community Outreach</span>
+                                    <span>ಸಮುದಾಯ ವಿಸ್ತರಣೆ</span>
                                 </label>
                                 <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
                                     <input type="checkbox" name="skills" value="Technical Support">
-                                    <span>Technical Support</span>
+                                    <span>ತಾಂತ್ರಿಕ ಬೆಂಬಲ</span>
                                 </label>
                                 <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
                                     <input type="checkbox" name="skills" value="Coordination">
-                                    <span>Coordination</span>
+                                    <span>ಸಮನ್ವಯ</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Availability</label>
+                            <label>ಲಭ್ಯತೆ</label>
                             <div class="radio-group" id="availabilityGroup">
                                 <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
                                     <input type="radio" name="availability" value="weekdays">
-                                    <span>Weekdays</span>
+                                    <span>ವಾರದ ದಿನಗಳು</span>
                                 </label>
                                 <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
                                     <input type="radio" name="availability" value="weekends">
-                                    <span>Weekends</span>
+                                    <span>ವಾರಾಂತ್ಯಗಳು</span>
                                 </label>
                                 <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
                                     <input type="radio" name="availability" value="both">
-                                    <span>Both</span>
+                                    <span>ಎರಡೂ</span>
                                 </label>
                                 <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
                                     <input type="radio" name="availability" value="emergency">
-                                    <span>Emergency Only</span>
+                                    <span>ತುರ್ತು ಮಾತ್ರ</span>
                                 </label>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Register as Volunteer</button>
+                        <button type="submit" class="btn btn-primary">ಸ್ವಯಂಸೇವಕರಾಗಿ ನೋಂದಣಿ ಮಾಡಿ</button>
                         <div id="regStatus" class="status-msg hidden"></div>
                     </form>
                 </div>
 
                 <div id="volunteerSignin" class="card hidden">
-                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">Volunteer Sign In</h3>
+                    <h3 style="margin-bottom: 16px; color: var(--primary-dark);">ಸ್ವಯಂಸೇವಕ ಸೈನ್ ಇನ್</h3>
                     <form id="volunteerSigninForm">
                         <div class="form-group">
-                            <label>Phone Number <span class="required">*</span></label>
+                            <label>ಫೋನ್ ಸಂಖ್ಯೆ <span class="required">*</span></label>
                             <input type="tel" name="phone" class="form-input" required
-                                placeholder="Registered phone number">
+                                placeholder="ನೋಂದಾಯಿತ ಫೋನ್ ಸಂಖ್ಯೆ">
                         </div>
-                        <button type="submit" class="btn btn-primary">Sign In</button>
+                        <button type="submit" class="btn btn-primary">ಸೈನ್ ಇನ್ ಮಾಡಿ</button>
                         <div id="signinStatus" class="status-msg hidden"></div>
                     </form>
                 </div>
 
                 <div id="volunteerDashboard" class="card hidden">
-                    <h3>Welcome, <span id="volName"></span>!</h3>
-                    <p style="color: var(--text-secondary); margin: 8px 0;">Skills: <span id="volSkills"></span></p>
-                    <p style="color: var(--text-secondary);">Availability: <span id="volAvail"></span></p>
-                    <button class="btn btn-outline" style="margin-top: 16px;" onclick="volunteerSignout()">Sign
-                        Out</button>
+                    <h3>ಸ್ವಾಗತ, <span id="volName"></span>!</h3>
+                    <p style="color: var(--text-secondary); margin: 8px 0;">ಕೌಶಲ್ಯಗಳು: <span id="volSkills"></span></p>
+                    <p style="color: var(--text-secondary);">ಲಭ್ಯತೆ: <span id="volAvail"></span></p>
+                    <button class="btn btn-outline" style="margin-top: 16px;" onclick="volunteerSignout()">ಸೈನ್ ಔಟ್ ಮಾಡಿ</button>
                 </div>
             </div>
 
             <!-- About Page -->
             <div id="aboutPage" class="hidden">
                 <h1 class="page-title">AIResQ ClimSols</h1>
-                <p class="page-subtitle">Rain2Resilience</p>
+                <!-- <p class="page-subtitle">ಮಳೆಯಿಂದ ಸ್ಥಿತಿಸ್ಥಾಪಕತೆಗೆ</p> -->
 
                 <div class="card">
-                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">Our Mission</h3>
-                    <p style="color: var(--text-secondary);">AIResQ ClimSols is dedicated to leveraging technology and
-                        community participation for effective disaster response. Our crowdsourced flood monitoring
-                        platform enables real-time data collection to help emergency responders and communities make
-                        informed decisions.</p>
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">ನಮ್ಮ ಉದ್ದೇಶ</h3>
+                    <p style="color: var(--text-secondary);">AIResQ ClimSols ಪರಿಣಾಮಕಾರಿ ವಿಪತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ತಂತ್ರಜ್ಞಾನ ಮತ್ತು
+                        ಸಮುದಾಯ ಭಾಗವಹಿಸುವಿಕೆಯನ್ನು ಬಳಸಿಕೊಳ್ಳಲು ಸಮರ್ಪಿತವಾಗಿದೆ। ನಮ್ಮ ಕ್ರೌಡ್‌ಸೋರ್ಸ್ಡ್ ಪ್ರವಾಹ ಮೇಲ್ವಿಚಾರಣೆ
+                        ವೇದಿಕೆಯು ತುರ್ತು ಪ್ರತಿಕ್ರಿಯಾಕಾರರು ಮತ್ತು ಸಮುದಾಯಗಳಿಗೆ ತಿಳುವಳಿಕೆಯುಳ್ಳ ನಿರ್ಧಾರಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಲು ಸಹಾಯ ಮಾಡಲು ನೈಜ-ಸಮಯದ ಡೇಟಾ ಸಂಗ್ರಹಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ।</p>
                 </div>
 
                 <div class="card">
-                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">How It Works</h3>
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ</h3>
                     <ul style="color: var(--text-secondary); padding-left: 20px; line-height: 1.8;">
-                        <li>Citizens report flood depths using visual reference objects</li>
-                        <li>GPS-tagged reports are collected and verified</li>
-                        <li>Data is analyzed for actionable insights</li>
-                        <li>Volunteers coordinate response efforts</li>
+                        <li>ನಾಗರಿಕರು ದೃಶ್ಯ ಉಲ್ಲೇಖ ವಸ್ತುಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಪ್ರವಾಹದ ಆಳವನ್ನು ವರದಿ ಮಾಡುತ್ತಾರೆ</li>
+                        <li>GPS-ಟ್ಯಾಗ್ ಮಾಡಿದ ವರದಿಗಳನ್ನು ಸಂಗ್ರಹಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ</li>
+                        <li>ಕ್ರಿಯಾಶೀಲ ಒಳನೋಟಗಳಿಗಾಗಿ ಡೇಟಾವನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತದೆ</li>
+                        <li>ಸ್ವಯಂಸೇವಕರು ಪ್ರತಿಕ್ರಿಯೆ ಪ್ರಯತ್ನಗಳನ್ನು ಸಮನ್ವಯಗೊಳಿಸುತ್ತಾರೆ</li>
                     </ul>
                 </div>
 
                 <div class="card">
-                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">Contact</h3>
-                    <p style="color: var(--text-secondary);">For inquiries, partnerships, or support, please reach out
-                        to our team.</p>
+                    <h3 style="margin-bottom: 12px; color: var(--primary-dark);">ಸಂಪರ್ಕ</h3>
+                    <p style="color: var(--text-secondary);">ವಿಚಾರಣೆಗಳು, ಪಾಲುದಾರಿಕೆಗಳು ಅಥವಾ ಬೆಂಬಲಕ್ಕಾಗಿ, ದಯವಿಟ್ಟು ನಮ್ಮ ತಂಡವನ್ನು ಸಂಪರ್ಕಿಸಿ।</p>
                 </div>
             </div>
         </div>

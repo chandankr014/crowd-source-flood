@@ -9,7 +9,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from pathlib import Path
 from werkzeug.utils import secure_filename
-from flask import Flask, request, jsonify, send_from_directory, render_template, make_response
+from flask import Flask, request, jsonify, send_from_directory, render_template, make_response, redirect
 import requests
 from PIL import Image
 
@@ -120,7 +120,34 @@ def index():
 
 @app.route('/admin')
 def admin():
-    return render_template('admin_template.html')
+    return render_template('admin.html')
+
+# Language support
+SUPPORTED_LANGUAGES = ['en', 'hn', 'bn', 'ta', 'te', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as', 'ur']
+
+def template_exists(template_name):
+    """Check if a template file exists"""
+    template_path = Path(app.template_folder) / template_name
+    return template_path.exists()
+
+@app.route('/<lang>/')
+@app.route('/<lang>/index.html')
+def lang_index(lang):
+    """Serve language-specific index page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        template = f'{lang}/index.html'
+        if template_exists(template):
+            return render_template(template)
+    return redirect('/')
+
+@app.route('/<lang>/admin.html')
+def lang_admin(lang):
+    """Serve language-specific admin page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        template = f'{lang}/admin.html'
+        if template_exists(template):
+            return render_template(template)
+    return redirect('/admin')
 
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
