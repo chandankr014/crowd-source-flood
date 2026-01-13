@@ -1,5 +1,70 @@
 /* AIResQ ClimSols - Index Page JavaScript (Hindi) */
 
+// =============================================================================
+// CALIBRATION CONSTANTS - Fixed 2-meter scale system
+// =============================================================================
+// The visual container represents exactly 2 meters (200cm) of real-world height.
+// All calculations derive from this fixed scale.
+const CALIBRATION = {
+    // Real-world height represented by the visual container (in cm)
+    SCALE_MAX_CM: 200,
+    
+    // Container height in pixels - will be updated dynamically from DOM
+    CONTAINER_HEIGHT_PX: 180,
+    
+    // Bottom padding in pixels (object sits above container bottom)
+    BOTTOM_OFFSET_PX: 8,
+    
+    // Derived: pixels per centimeter (for precise calculations)
+    get PX_PER_CM() {
+        return (this.CONTAINER_HEIGHT_PX - this.BOTTOM_OFFSET_PX) / this.SCALE_MAX_CM;
+    },
+    
+    // Derived: centimeters per pixel
+    get CM_PER_PX() {
+        return this.SCALE_MAX_CM / (this.CONTAINER_HEIGHT_PX - this.BOTTOM_OFFSET_PX);
+    },
+    
+    // Derived: usable height (container height minus bottom offset)
+    get USABLE_HEIGHT_PX() {
+        return this.CONTAINER_HEIGHT_PX - this.BOTTOM_OFFSET_PX;
+    },
+    
+    // Debug logging enabled
+    DEBUG: true,
+    
+    // Log calibration data for debugging
+    log(label, data) {
+        if (this.DEBUG) {
+            console.log(`[Calibration:${label}]`, data);
+        }
+    },
+    
+    // Update container height from DOM (call on load and resize)
+    updateFromDOM() {
+        const container = document.querySelector('.depth-visual-container');
+        if (container) {
+            this.CONTAINER_HEIGHT_PX = container.offsetHeight;
+            this.log('DOMUpdate', {
+                containerHeightPx: this.CONTAINER_HEIGHT_PX,
+                usableHeightPx: this.USABLE_HEIGHT_PX,
+                pxPerCm: this.PX_PER_CM.toFixed(3),
+                scaleMaxCm: this.SCALE_MAX_CM
+            });
+        }
+    },
+    
+    // Convert real-world cm to pixel height
+    cmToPixels(cm) {
+        return (cm / this.SCALE_MAX_CM) * this.USABLE_HEIGHT_PX;
+    },
+    
+    // Convert pixel height to real-world cm
+    pixelsToCm(px) {
+        return (px / this.USABLE_HEIGHT_PX) * this.SCALE_MAX_CM;
+    }
+};
+
 // Reference depth labels (in cm) – scaled & physically consistent
 const depthLabels = {
     car: [
@@ -46,6 +111,15 @@ const depthLabels = {
     ]
 };
 
+// Reference object real heights in cm (for depth calculation)
+const referenceRealHeights = {
+    car: 155, 
+    autorickshaw: 185,
+    bike: 130, 
+    cycle: 120, 
+    person: 183 
+};
+
 const referenceImages = {
     car: '/static/carsvg.svg',
     autorickshaw: '/static/autorickshaw.svg',
@@ -54,14 +128,6 @@ const referenceImages = {
     person: '/static/person.svg'
 };
 
-// Reference object real heights in cm (for depth calculation)
-const referenceRealHeights = {
-    car: 150,           // Average car height ~150cm
-    autorickshaw: 165,  // Auto rickshaw ~165cm
-    bike: 125,          // Motorcycle ~125cm
-    cycle: 110,         // Bicycle ~110cm
-    person: 183         // Default 6 feet = 183cm (adjustable)
-};
 
 // Visual sizes removed - now handled by CSS with data-type attribute
 
@@ -97,15 +163,41 @@ function getUnitLabel(unit) {
 }
 
 // Update reference display with data-type for CSS responsive sizing
+// Now also scales the reference object height proportionally to the 2m container
 function updateReferenceDisplay() {
     const refDisplay = document.getElementById('referenceDisplay');
     const refImg = document.getElementById('referenceImg');
     
     if (!refDisplay || !refImg) return;
     
+    // Update calibration from DOM to handle responsive container sizes
+    CALIBRATION.updateFromDOM();
+    
     // Set data-type attribute for CSS-based responsive sizing
     refDisplay.setAttribute('data-type', selectedReference);
     refImg.src = referenceImages[selectedReference];
+    
+    // =======================================================================
+    // CALIBRATED SCALING: Scale reference object to match 2m container
+    // =======================================================================
+    const refHeightCm = referenceRealHeights[selectedReference];
+    
+    // Calculate the height in pixels using calibration
+    const scaledHeightPx = CALIBRATION.cmToPixels(refHeightCm);
+    
+    // Apply the calculated height to the reference display
+    refDisplay.style.setProperty('--ref-height', `${Math.round(scaledHeightPx)}px`);
+    
+    // Debug logging
+    CALIBRATION.log('RefDisplay', {
+        reference: selectedReference,
+        realHeightCm: refHeightCm,
+        scaledHeightPx: Math.round(scaledHeightPx),
+        containerHeightPx: CALIBRATION.CONTAINER_HEIGHT_PX,
+        usableHeightPx: CALIBRATION.USABLE_HEIGHT_PX,
+        scaleMaxCm: CALIBRATION.SCALE_MAX_CM,
+        pxPerCm: CALIBRATION.PX_PER_CM.toFixed(3)
+    });
 }
 
 // Page navigation
@@ -262,8 +354,10 @@ function selectRadio(el, name, event) {
 
 // Person height adjustment - calibrated to default 6ft (183cm)
 // DEBUG: Call setPersonHeight(cm) from console to test
+// DEBUG: Call CALIBRATION.log('test', {...}) to see calibration data
 function setPersonHeight(heightCm) {
     // Clamp between 100cm (3'3") and 230cm (7'6")
+    // Note: heights > 200cm will extend beyond the 2m visual scale
     personHeightCm = Math.max(100, Math.min(230, Math.round(heightCm)));
     referenceRealHeights.person = personHeightCm;
     
@@ -289,13 +383,25 @@ function setPersonHeight(heightCm) {
         cmDisplay.textContent = `(${personHeightCm} cm)`;
     }
     
-    // Recalculate depth display if person is selected
+    // Calculate the scaled height in pixels for display
+    const scaledHeightPx = CALIBRATION.cmToPixels(personHeightCm);
+    
+    // Debug log for calibration verification
+    CALIBRATION.log('PersonHeight', {
+        heightCm: personHeightCm,
+        baseHeightCm: baseHeight,
+        ratio: ratio.toFixed(3),
+        kneeDepthCm: Math.round(45 * ratio),
+        waistDepthCm: Math.round(100 * ratio),
+        scaledHeightPx: Math.round(scaledHeightPx),
+        exceedsScale: personHeightCm > CALIBRATION.SCALE_MAX_CM
+    });
+    
+    // Recalculate display if person is selected (updates both visual and labels)
     if (selectedReference === 'person') {
+        updateReferenceDisplay();
         updateDepthDisplay(depthInCm);
     }
-    
-    // Debug log for verification
-    console.log(`[Height] Set to ${personHeightCm}cm, ratio=${ratio.toFixed(2)}, knee=${Math.round(45*ratio)}cm`);
 }
 
 // Convert feet+inches to cm
@@ -397,6 +503,7 @@ function initDepthControls() {
 }
 
 // Update depth display
+// Uses CALIBRATION constants for consistent 2-meter scale rendering
 function updateDepthDisplay(cm) {
     const waterLevel = document.getElementById('waterLevel');
     const depthValueEl = document.getElementById('depthValue');
@@ -416,7 +523,7 @@ function updateDepthDisplay(cm) {
         depthInput.value = displayValue;
     }
 
-    // Update status label
+    // Update status label based on reference object depth thresholds
     const labels = depthLabels[selectedReference];
     let status = labels[0].label;
     for (let i = labels.length - 1; i >= 0; i--) {
@@ -424,13 +531,45 @@ function updateDepthDisplay(cm) {
     }
     if (depthStatus) depthStatus.textContent = status;
 
-    // Calculate water level based on reference object's real height
-    const refHeight = referenceRealHeights[selectedReference];
-    const maxDepthForRef = refHeight || 200;
-    const waterHeight = Math.min((cm / maxDepthForRef) * 100, 100);
+    // =======================================================================
+    // CALIBRATED WATER LEVEL CALCULATION
+    // =======================================================================
+    // Water level is always calculated against the fixed 2-meter (200cm) scale
+    // This ensures the visual representation is physically accurate regardless
+    // of which reference object is selected.
+    
+    const refHeightCm = referenceRealHeights[selectedReference];
+    
+    // Calculate water height in pixels for accurate rendering
+    // This is clamped to the usable height (container - bottom offset)
+    const waterHeightPx = Math.min(CALIBRATION.cmToPixels(cm), CALIBRATION.USABLE_HEIGHT_PX);
+    
+    // Calculate reference object height in pixels
+    const refHeightPx = CALIBRATION.cmToPixels(refHeightCm);
+    
+    // Calculate submergence level (how much of the reference object is submerged)
+    const submergencePercent = Math.min((cm / refHeightCm) * 100, 100);
+    
+    // Calculate the overlap between water and reference object in cm
+    const overlapCm = Math.min(cm, refHeightCm);
+    
     if (waterLevel) {
-        waterLevel.style.height = waterHeight + '%';
+        // Set water level height in pixels for precise calibration
+        waterLevel.style.height = waterHeightPx + 'px';
     }
+    
+    // Debug logging for calibration verification
+    CALIBRATION.log('DepthCalc', {
+        inputDepthCm: cm,
+        reference: selectedReference,
+        refHeightCm: refHeightCm,
+        refHeightPx: refHeightPx.toFixed(1) + 'px',
+        scaleMaxCm: CALIBRATION.SCALE_MAX_CM,
+        waterHeightPx: waterHeightPx.toFixed(1) + 'px',
+        submergencePercent: submergencePercent.toFixed(2) + '%',
+        overlapCm: overlapCm,
+        status: status
+    });
 
     // Update status badge color
     if (depthStatus) {
@@ -718,8 +857,28 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Handle window resize - recalibrate reference display
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        CALIBRATION.log('Resize', { windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+        updateReferenceDisplay();
+        updateDepthDisplay(depthInCm);
+    }, 150);
+});
+
 // Initialize everything on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize calibration from DOM first
+    CALIBRATION.updateFromDOM();
+    CALIBRATION.log('Init', {
+        containerHeightPx: CALIBRATION.CONTAINER_HEIGHT_PX,
+        scaleMaxCm: CALIBRATION.SCALE_MAX_CM,
+        pxPerCm: CALIBRATION.PX_PER_CM.toFixed(3),
+        cmPerPx: CALIBRATION.CM_PER_PX.toFixed(3)
+    });
+    
     requestPermissions();
     initGPS();
     initLanguagePreference();
@@ -730,6 +889,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initReportForm();
     initVolunteerForms();
     
-    // Initialize reference display with data-type
+    // Initialize reference display with calibrated data-type
     updateReferenceDisplay();
+    
+    // Log initial state for debugging
+    console.log('[AIResQ] Calibration system initialized. Debug commands:');
+    console.log('  CALIBRATION.log("test", {...}) - Log calibration data');
+    console.log('  setPersonHeight(cm) - Set person height and recalibrate');
+    console.log('  CALIBRATION.DEBUG = false - Disable debug logging');
 });

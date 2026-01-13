@@ -761,6 +761,6 @@ def delete_saved_news(news_id):
         print(f"Delete news error: {e}")
         return jsonify({'error': 'Server error'}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8005, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=8005, debug=True)
     

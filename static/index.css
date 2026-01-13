@@ -427,9 +427,15 @@ body {
 }
 
 /* Visualization - Responsive Mobile-First */
+/* =============================================================================
+   CALIBRATION: Container represents exactly 2 meters (200cm) of real-world height
+   Container height = 180px, therefore: 0.9 px per cm (180px / 200cm)
+   All reference objects and water levels are scaled to this fixed ratio.
+   ============================================================================= */
 .depth-visual-container {
     position: relative;
     width: 100%;
+    /* FIXED: 180px represents exactly 2 meters (200cm) - DO NOT CHANGE without updating JS CALIBRATION */
     height: 180px;
     margin: 0 auto 16px;
     background: linear-gradient(to bottom, #E8F4F8 0%, #D4EAF0 100%);
@@ -440,6 +446,7 @@ body {
 
 .reference-display {
     position: absolute;
+    /* FIXED: 8px bottom offset - must match JS CALIBRATION.BOTTOM_OFFSET_PX */
     bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
@@ -447,11 +454,11 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    /* Responsive sizing using CSS custom properties */
+    /* Default height - will be overridden by JS calibration */
     --ref-height: 120px;
     height: var(--ref-height);
     width: auto;
-    transition: all 0.3s ease;
+    transition: height 0.3s ease;
 }
 
 .reference-display img {
@@ -463,30 +470,38 @@ body {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
-/* Reference object specific sizing for mobile */
+/* Reference object CSS fallback heights - JS will override with calibrated values
+   These are approximate pixel heights based on: (realHeightCm / 200cm) * (180px - 8px) */
 .reference-display[data-type="car"] {
-    --ref-height: 100px;
+    /* Car: 150cm -> (150/200) * 172 = 129px */
+    --ref-height: 129px;
 }
 .reference-display[data-type="autorickshaw"] {
-    --ref-height: 110px;
+    /* Auto: 165cm -> (165/200) * 172 = 142px */
+    --ref-height: 142px;
 }
 .reference-display[data-type="bike"] {
-    --ref-height: 95px;
+    /* Bike: 125cm -> (125/200) * 172 = 108px */
+    --ref-height: 108px;
 }
 .reference-display[data-type="cycle"] {
-    --ref-height: 90px;
+    /* Cycle: 110cm -> (110/200) * 172 = 95px */
+    --ref-height: 95px;
 }
 .reference-display[data-type="person"] {
-    --ref-height: 130px;
+    /* Person (6ft): 183cm -> (183/200) * 172 = 157px */
+    --ref-height: 157px;
 }
 
 .water-level {
     position: absolute;
-    bottom: 10px;
+    /* FIXED: Water starts at same baseline as reference objects */
+    bottom: 8px;
     left: 0;
     right: 0;
     background: linear-gradient(to top, rgba(29, 120, 159, 0.7) 0%, rgba(44, 143, 181, 0.5) 100%);
     transition: height 0.3s ease;
+    /* Height is set by JS as percentage of container (max 100% = 2 meters) */
 }
 
 .water-wave {
