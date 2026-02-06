@@ -862,26 +862,23 @@ function getCurrentLang() {
 }
 
 function switchLanguage(langCode) {
+    // Save preference but don't redirect admin panel
+    // Admin panel stays accessible at /admin in English
     localStorage.setItem('preferredLang', langCode);
-    const base = getPageBase();
-    const suffix = LANGUAGES[langCode]?.suffix || '';
-    const newPage = '/' + base + suffix;
-
-    fetch(newPage, { method: 'HEAD' })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = newPage;
-            } else {
-                console.warn(`Page ${newPage} not found, staying on current page`);
-                localStorage.setItem('preferredLang', 'en');
-                if (getCurrentLang() !== 'en') {
-                    window.location.href = '/' + base;
-                }
-            }
-        })
-        .catch(() => {
-            window.location.href = newPage;
-        });
+    
+    // Update UI to show selected language (visual feedback only)
+    highlightCurrentLang();
+    
+    // Show message that admin panel is English-only
+    const authStatus = document.getElementById('authStatus');
+    if (authStatus && langCode !== 'en') {
+        authStatus.textContent = 'Admin panel is available in English only. Language preference saved for other pages.';
+        authStatus.className = 'auth-status info';
+        authStatus.style.display = 'block';
+        setTimeout(() => {
+            authStatus.style.display = 'none';
+        }, 3000);
+    }
 }
 
 function toggleLangMenu(event) {
@@ -902,23 +899,8 @@ function highlightCurrentLang() {
 }
 
 function initLanguagePreference() {
-    const savedLang = localStorage.getItem('preferredLang');
-    const currentLang = getCurrentLang();
-
-    if (savedLang && savedLang !== currentLang && LANGUAGES[savedLang]) {
-        const base = getPageBase();
-        const suffix = LANGUAGES[savedLang].suffix;
-        const newPage = '/' + base + suffix;
-
-        fetch(newPage, { method: 'HEAD' })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = newPage;
-                }
-            })
-            .catch(() => { });
-    }
-
+    // Admin panel stays in English by default - no auto-redirect
+    // Users can manually switch language if needed
     highlightCurrentLang();
 }
 
@@ -931,7 +913,24 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    // CRITICAL FIX: Clear bad language preference that causes redirect loop
+    const savedLang = localStorage.getItem('preferredLang');
+    if (savedLang && savedLang !== 'en') {
+        console.log('Clearing problematic language preference:', savedLang);
+        localStorage.removeItem('preferredLang');
+        // Also delete all language-related keys to be safe
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.includes('lang')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+    }
+    
     checkExistingSession();
+    // Removed auto-redirect on page load to prevent navigation issues
     initLanguagePreference();
     
     // Modal event listeners

@@ -1,0 +1,210 @@
+{% extends "sk/portal_sanskrit.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header compact">
+        <h1 class="page-title">जलप्लावन-गभीरतां प्रतिवेदयन्तु</h1>
+        <p class="page-subtitle">सन्दर्भ-चित्रेण सह प्रतिवेदनं प्रस्तूय भवतः क्षेत्रे जलप्लावन-स्तरं निरीक्षितुं साहाय्यं कुर्वन्तु</p>
+    </div>
+
+    <!-- Official Notice -->
+    <!-- <div class="notice-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>भवतः प्रतिवेदनं अधिकारिभिः समीक्षितं भविष्यति तथा आपद-प्रतिक्रिया-समन्वयाय उपयुज्यते। कृपया यथार्थं सूचनां प्रदातव्यम्।</span>
+    </div> -->
+
+    <form id="reportForm" class="card compact-form" enctype="multipart/form-data">
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>नाम</label>
+                    <input type="text" name="name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>दूरवाणी</label>
+                    <input type="tel" name="phone" id="phone" class="form-input"
+                        minlength="10">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>मार्गः/क्षेत्रम्</label>
+                    <input type="text" name="street" id="street" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>प्रदेशः/अञ्चलम्</label>
+                    <input type="text" id="zone" name="zone" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">सन्दर्भ-वस्तु</label>
+            <div class="reference-selector">
+                <div class="reference-option selected" data-type="car">
+                    <img src="/static/carsvg.svg" alt="वाहनम्">
+                    <span>वाहनम्</span>
+                </div>
+                <div class="reference-option" data-type="autorickshaw">
+                    <img src="/static/autorickshaw.svg" alt="स्वचालितम्">
+                    <span>स्वचालितम्</span>
+                </div>
+                <div class="reference-option" data-type="bike">
+                    <img src="/static/bikesvg.svg" alt="द्विचक्रिका">
+                    <span>द्विचक्रिका</span>
+                </div>
+                <div class="reference-option" data-type="cycle">
+                    <img src="/static/bicycle.svg" alt="यानम्">
+                    <span>यानम्</span>
+                </div>
+                <div class="reference-option" data-type="person">
+                    <img src="/static/person.svg" alt="व्यक्तिः">
+                    <span>व्यक्तिः</span>
+                </div>
+            </div>
+            <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
+
+            <!-- Person Height Adjustment Section -->
+            <div id="heightAdjustmentSection" class="height-adjustment hidden">
+                <div class="height-input-row">
+                    <label for="personHeightFeet">भवतः उच्चता:</label>
+                    <input type="number" id="personHeightFeet" value="6" min="3" max="7" step="1" class="height-feet">
+                    <span class="height-label">पादाः</span>
+                    <input type="number" id="personHeightInches" value="0" min="0" max="11" step="1"
+                        class="height-inches">
+                    <span class="height-label">अङ्गुलाः</span>
+                    <span class="height-cm-display">(183 से.मी.)</span>
+                </div>
+                <div class="height-presets">
+                    <button type="button" class="height-preset" data-feet="5" data-inches="0">5'0"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="4">5'4"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="7">5'7"</button>
+                    <button type="button" class="height-preset active" data-feet="6" data-inches="0">6'0"</button>
+                    <button type="button" class="height-preset" data-feet="6" data-inches="2">6'2"</button>
+                </div>
+                <p class="height-calibration-note">पूर्वनिर्धारितम्: 6 पादाः (183 से.मी.)। यथार्थ-गभीरता-गणनाय स्व-उच्चतया सह समायोजनं कुर्वन्तु।</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="depth-section">
+                <div class="depth-header">
+                    <div class="depth-display">
+                        <span class="depth-value" id="depthValue">0</span>
+                        <span class="depth-unit-label" id="depthUnitLabel">मी.</span>
+                    </div>
+                    <span class="depth-status" id="depthStatus">जलप्लावनं नास्ति</span>
+                </div>
+
+                <!-- Unit Selector -->
+                <div class="unit-selector">
+                    <button type="button" class="unit-btn active" data-unit="meter">मीटरम्</button>
+                    <button type="button" class="unit-btn" data-unit="feet">पादाः</button>
+                    <button type="button" class="unit-btn" data-unit="cm">से.मी.</button>
+                </div>
+
+                <!-- Water Animation Visualization -->
+                <div class="depth-visual-container">
+                    <div class="reference-display" id="referenceDisplay">
+                        <img id="referenceImg" src="/static/carsvg.svg" alt="सन्दर्भः">
+                    </div>
+                    <div class="water-level" id="waterLevel">
+                    </div>
+                </div>
+
+                <div class="depth-controls">
+                    <div class="slider-row">
+                        <span>0</span>
+                        <input type="range" name="flood_depth_cm" id="flood_depth_cm" min="0" max="200" value="0">
+                        <span>200</span>
+                    </div>
+                    <div class="depth-input-group">
+                        <label for="depth_input">गभीरता:</label>
+                        <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
+                        <span id="inputUnit">मी.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">चित्र-प्रमाणम्</label>
+            <div class="photo-buttons">
+                <button type="button" class="btn btn-primary" onclick="openGallery()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="m21 15-5-5L5 21" />
+                    </svg>
+                    संग्रहालयात् उपारोपयन्तु
+                </button>
+                <button type="button" class="btn btn-primary" onclick="openCamera()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                    चित्रं गृह्णन्तु
+                </button>
+            </div>
+            <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <input type="file" id="photoGallery" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <div id="photoPreview" class="photo-preview hidden">
+                <img id="previewImg" alt="चित्र-पूर्वावलोकनम्">
+                <p id="photoName"></p>
+            </div>
+        </div>
+
+        <!-- Camera Modal for Mobile -->
+        <div id="cameraModal" class="camera-modal">
+            <video id="cameraStream" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button type="button" onclick="closeCamera()" class="btn btn-danger">निरस्तं कुर्वन्तु</button>
+                <button type="button" onclick="capturePhoto()" class="btn btn-capture">📷</button>
+            </div>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>टिप्पण्यः</label>
+                <textarea name="remarks" class="form-textarea" rows="2"
+                    placeholder="अतिरिक्त-अवलोकनानि - मार्ग-स्थितिः, उद्धार-आवश्यकता, प्रभावित-क्षेत्राणि (ऐच्छिकम्)"></textarea>
+            </div>
+        </div>
+
+        <div class="gps-status" id="gpsStatus">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="3" fill="currentColor" />
+            </svg>
+            <span id="gpsText">GPS-स्थानं प्राप्नुवन्ति...</span>
+        </div>
+        <input type="hidden" name="gps_lat" id="gps_lat">
+        <input type="hidden" name="gps_lon" id="gps_lon">
+        <input type="hidden" name="gps_accuracy" id="gps_accuracy">
+
+        <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q" style="margin: 20px 0;"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+            </svg>
+            जलप्लावन-प्रतिवेदनं प्रस्तूयताम्
+        </button>
+        <div id="formStatus" class="status-msg hidden"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/report.js"></script>
+{% endblock %}

@@ -14,16 +14,24 @@ Minimal, field-usable platform to collect flood depth + photo proofs from citize
    ```
 
 3. **Run the Server**:
-   ```bash
-   # Development
-   python app.py
    
-   # Production (Windows/Linux/Mac)
-   python serve.py
-   
-   # Production (Linux/Docker only)
-   gunicorn -c gunicorn.conf.py app:app
+   **Windows (Recommended):**
+   ```powershell
+   python server.py
    ```
+   See [WAITRESS_GUIDE.md](WAITRESS_GUIDE.md) for Windows production setup.
+   
+   **Linux/Unix (Recommended):**
+   ```bash
+   gunicorn --config gunicorn.conf.py app:app
+   ```
+   See [GUNICORN_GUIDE.md](GUNICORN_GUIDE.md) for Linux production setup.
+   
+   **Development (All Platforms):**
+   ```bash
+   python app.py
+   ```
+   
    The application will be available at `http://localhost:8005`.
 
 ## Docker Usage

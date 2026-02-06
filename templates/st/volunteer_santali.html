@@ -1,0 +1,137 @@
+{% extends "st/portal_santali.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱯᱚᱨᱴᱟᱞ
+        </h1>
+        <p class="page-subtitle">ᱚᱵᱚᱥᱛᱷᱟ ᱡᱚᱵᱟᱵᱽ ᱱᱮᱴᱣᱟᱨᱠ ᱨᱮ ᱥᱮᱞᱮᱫᱽ ᱢᱮ᱾ ᱫᱟᱜ ᱤᱢᱚᱨᱡᱮᱱᱥᱤ ᱚᱠᱛᱚ ᱨᱮ ᱜᱚᱲᱚ ᱞᱟᱹᱜᱤᱫ ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱞᱮᱠᱟᱛᱮ ᱨᱚᱡᱤᱥᱴᱟᱨ ᱢᱮ᱾</p>
+    </div>
+
+    <div class="notice-banner info">
+        <span>ᱨᱚᱡᱤᱥᱴᱟᱨᱰ ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱠᱚ ᱥᱟᱶ ᱤᱢᱚᱨᱡᱮᱱᱥᱤ ᱚᱠᱛᱚ ᱨᱮ ᱚᱯᱷᱤᱥᱚᱨ ᱠᱚ ᱡᱚᱲᱟᱣ ᱠᱚᱣᱟ᱾ ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱧᱟᱢᱚᱜ ᱨᱮᱭᱟᱜ ᱫᱚᱦᱚ ᱢᱮ᱾</span>
+    </div>
+
+    <div class="tab-buttons">
+        <button class="btn btn-primary tab-active" onclick="showVolunteerTab('register')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            ᱨᱚᱡᱤᱥᱴᱟᱨ
+        </button>
+        <button class="btn btn-outline" onclick="showVolunteerTab('signin')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            ᱥᱟᱭᱤᱱ ᱤᱱ
+        </button>
+    </div>
+
+    <div id="volunteerRegister" class="card">
+        <h3 class="card-title">ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱨᱚᱡᱤᱥᱴᱨᱮᱥᱚᱱ</h3>
+        <form id="volunteerRegForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>ᱯᱩᱨᱟᱹ ᱧᱩᱛᱩᱢ <span class="required">*</span></label>
+                    <input type="text" name="username" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>ᱯᱷᱚᱱ ᱱᱚᱢᱵᱚᱨ <span class="required">*</span></label>
+                    <input type="tel" name="phone" class="form-input" required minlength="10">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ᱦᱩᱱᱟᱹᱨ/ᱢᱚᱱ ᱨᱮᱭᱟᱜ ᱡᱟᱭᱜᱟ</label>
+                <div class="checkbox-group" id="skillsGroup">
+                    <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                        <input type="checkbox" name="skills" value="Emergency Response">
+                        <span>ᱤᱢᱚᱨᱡᱮᱱᱥᱤ ᱡᱚᱵᱟᱵᱽ</span>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                        <input type="checkbox" name="skills" value="Data Collection">
+                        <span>ᱰᱟᱴᱟ ᱡᱟᱣᱨᱟ</span>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                        <input type="checkbox" name="skills" value="Community Outreach">
+                        <span>ᱠᱚᱢᱤᱣᱱᱤᱴᱤ ᱥᱟᱶ ᱡᱚᱲᱟᱣ</span>
+                    </label>
+                    <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+                        <input type="checkbox" name="skills" value="Medical Aid">
+                        <span>ᱨᱟᱹᱥᱠᱟᱹ ᱜᱚᱲᱚ</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ᱧᱟᱢᱚᱜ ᱨᱮᱭᱟᱜ</label>
+                <div class="radio-group" id="availabilityGroup">
+                    <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                        <input type="radio" name="availability" value="weekdays">
+                        <span>ᱦᱟᱯᱛᱟ ᱢᱟᱦᱟᱸ</span>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                        <input type="radio" name="availability" value="weekends">
+                        <span>ᱦᱟᱯᱛᱟ ᱢᱩᱪᱟᱹᱫ</span>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                        <input type="radio" name="availability" value="both">
+                        <span>ᱵᱟᱱᱟᱨ</span>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio(this, 'availability', event)">
+                        <input type="radio" name="availability" value="emergency">
+                        <span>ᱠᱷᱟᱹᱞᱤ ᱤᱢᱚᱨᱡᱮᱱᱥᱤ</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-submit">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱞᱮᱠᱟᱛᱮ ᱨᱚᱡᱤᱥᱴᱟᱨ ᱢᱮ
+            </button>
+            <div id="regStatus" class="status-msg hidden"></div>
+        </form>
+    </div>
+
+    <div id="volunteerSignin" class="card hidden">
+        <h3 class="card-title">ᱵᱚᱞᱚᱱᱴᱤᱭᱚᱨ ᱥᱟᱭᱤᱱ ᱤᱱ</h3>
+        <form id="volunteerSigninForm">
+            <div class="form-group">
+                <label>ᱯᱷᱚᱱ ᱱᱚᱢᱵᱚᱨ <span class="required">*</span></label>
+                <input type="tel" name="phone" class="form-input" required >
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit">ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ</button>
+            <div id="signinStatus" class="status-msg hidden"></div>
+        </form>
+    </div>
+
+    <div id="volunteerDashboard" class="card hidden">
+        <h3 class="card-title">ᱡᱚᱦᱟᱨ, <span id="volName"></span>!</h3>
+        <div class="dashboard-info">
+            <p><strong>ᱦᱩᱱᱟᱹᱨ:</strong> <span id="volSkills">-</span></p>
+            <p><strong>ᱧᱟᱢᱚᱜ:</strong> <span id="volAvail">-</span></p>
+            <p><strong>ᱚᱵᱚᱥᱛᱷᱟ:</strong> <span class="badge badge-success">ᱠᱟᱹᱢᱤᱭᱟᱱ</span></p>
+        </div>
+        <button class="btn btn-outline" onclick="volunteerSignout()">ᱥᱟᱭᱤᱱ ᱟᱣᱴ</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/volunteer.js"></script>
+{% endblock %}

@@ -114,6 +114,7 @@ function setupDepthInputMode() {
 
 // GPS Capture
 let watchId = null;
+let bestAccuracy = Infinity;
 
 function initGPS() {
     const retryBtn = document.getElementById('retryGPS');
@@ -131,52 +132,86 @@ function initGPS() {
         return;
     }
 
+    // High accuracy options - crucial for precise location
     const options = {
-        enableHighAccuracy: true,
-        timeout: 30000,
-        maximumAge: 0
+        enableHighAccuracy: true,  // Request GPS hardware (not WiFi/IP)
+        timeout: 60000,            // Wait up to 60s for GPS lock
+        maximumAge: 0              // Never use cached positions
     };
 
-    gpsText.textContent = 'Locating...';
+    gpsText.textContent = 'Acquiring GPS signal...';
+    bestAccuracy = Infinity;
 
     if (watchId) navigator.geolocation.clearWatch(watchId);
 
     watchId = navigator.geolocation.watchPosition(
         (position) => {
-            gpsData.lat = position.coords.latitude.toFixed(6);
-            gpsData.lon = position.coords.longitude.toFixed(6);
-            gpsData.accuracy = position.coords.accuracy.toFixed(2);
+            const accuracy = position.coords.accuracy;
+            
+            // Only update if this reading is more accurate than previous
+            if (accuracy < bestAccuracy) {
+                bestAccuracy = accuracy;
+                gpsData.lat = position.coords.latitude.toFixed(6);
+                gpsData.lon = position.coords.longitude.toFixed(6);
+                gpsData.accuracy = accuracy.toFixed(2);
 
-            document.getElementById('gps_lat').value = gpsData.lat;
-            document.getElementById('gps_lon').value = gpsData.lon;
-            document.getElementById('gps_accuracy').value = gpsData.accuracy;
+                document.getElementById('gps_lat').value = gpsData.lat;
+                document.getElementById('gps_lon').value = gpsData.lon;
+                document.getElementById('gps_accuracy').value = gpsData.accuracy;
 
-            // updateGPSStatus(`Located (±${gpsData.accuracy}m)`, true);
-            updateGPSStatus(`Location: (${gpsData.lat}, ${gpsData.lon})`, true);
+                // Show accuracy level to user
+                let accuracyLabel = '';
+                if (accuracy <= 10) {
+                    accuracyLabel = '📍 High accuracy';
+                } else if (accuracy <= 30) {
+                    accuracyLabel = '📍 Good accuracy';
+                } else if (accuracy <= 100) {
+                    accuracyLabel = '📍 Moderate accuracy';
+                } else {
+                    accuracyLabel = '📍 accuracy';
+                }
+                
+                updateGPSStatus(`${accuracyLabel} (±${Math.round(accuracy)}m)`, true);
+                console.log(`GPS Update: ${gpsData.lat}, ${gpsData.lon} (±${accuracy}m)`);
+            }
 
-            if (position.coords.accuracy < 30) {
+            // Stop watching once we have excellent accuracy (≤10m)
+            // This is precise enough for flood reporting
+            if (accuracy <= 10) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
-                console.log("GPS ACCURACY IS TOO LOW: ", gpsData.accuracy);
+                console.log("Excellent GPS accuracy achieved:", accuracy, "m");
             }
         },
         (error) => {
             console.warn('GPS error:', error);
             let msg = 'GPS unavailable';
             if (error.code === 1) msg = 'Location permission denied';
-            else if (error.code === 3) msg = 'Location timeout';
+            else if (error.code === 2) msg = 'Position unavailable';
+            else if (error.code === 3) msg = 'Location timeout - retrying...';
 
             updateGPSStatus(msg, false);
             if (retryBtn) retryBtn.style.display = 'inline-block';
 
             // Highlight address fields as fallback
-            document.getElementById('street').style.borderColor = 'var(--primary-teal)';
-            document.getElementById('zone').style.borderColor = 'var(--primary-teal)';
+            if (streetField) streetField.style.borderColor = 'var(--primary-teal)';
+            if (zoneField) zoneField.style.borderColor = 'var(--primary-teal)';
 
             fallbackToIPLocation();
         },
         options
     );
+    
+    // Auto-stop watching after 2 minutes to save battery
+    setTimeout(() => {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            if (bestAccuracy < Infinity) {
+                console.log("GPS watch stopped after timeout. Best accuracy:", bestAccuracy, "m");
+            }
+        }
+    }, 120000);
 }
 
 async function fallbackToIPLocation() {

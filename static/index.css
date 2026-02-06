@@ -476,18 +476,22 @@ body {
     /* Car: 150cm -> (150/200) * 172 = 129px */
     --ref-height: 129px;
 }
+
 .reference-display[data-type="autorickshaw"] {
     /* Auto: 165cm -> (165/200) * 172 = 142px */
     --ref-height: 142px;
 }
+
 .reference-display[data-type="bike"] {
     /* Bike: 125cm -> (125/200) * 172 = 108px */
     --ref-height: 108px;
 }
+
 .reference-display[data-type="cycle"] {
     /* Cycle: 110cm -> (110/200) * 172 = 95px */
     --ref-height: 95px;
 }
+
 .reference-display[data-type="person"] {
     /* Person (6ft): 183cm -> (183/200) * 172 = 157px */
     --ref-height: 157px;
@@ -506,18 +510,35 @@ body {
 
 .water-wave {
     position: absolute;
-    top: -8px;
+    top: -12px;
+    left: -10%;
+    width: 100%;
+    height: 8px;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, rgba(29, 120, 159, 0.4) 50%, transparent 90%);
+    filter: blur(1px);
+    animation: wave 20s infinite ease-in-out;
+    z-index: 5;
+}
+
+.water-wave::before {
+    content: "";
+    position: absolute;
+    top: 4px;
     left: 0;
-    right: 0;
-    height: 16px;
-    background: radial-gradient(ellipse at center, rgba(29, 120, 159, 0.5) 0%, transparent 70%);
-    animation: wave 2s infinite ease-in-out;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    animation: wave 8s infinite ease-in-out reverse;
+    opacity: 0.7;
 }
 
 @keyframes wave {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateX(0);
     }
+
     50% {
         transform: translateX(-8px);
     }
@@ -945,15 +966,19 @@ body {
     .reference-display[data-type="car"] {
         --ref-height: 130px;
     }
+
     .reference-display[data-type="autorickshaw"] {
         --ref-height: 140px;
     }
+
     .reference-display[data-type="bike"] {
         --ref-height: 115px;
     }
+
     .reference-display[data-type="cycle"] {
         --ref-height: 110px;
     }
+
     .reference-display[data-type="person"] {
         --ref-height: 160px;
     }
@@ -1008,15 +1033,19 @@ body {
     .reference-display[data-type="car"] {
         --ref-height: 150px;
     }
+
     .reference-display[data-type="autorickshaw"] {
         --ref-height: 160px;
     }
+
     .reference-display[data-type="bike"] {
         --ref-height: 130px;
     }
+
     .reference-display[data-type="cycle"] {
         --ref-height: 120px;
     }
+
     .reference-display[data-type="person"] {
         --ref-height: 190px;
     }
@@ -1057,15 +1086,19 @@ body {
     .reference-display[data-type="car"] {
         --ref-height: 170px;
     }
+
     .reference-display[data-type="autorickshaw"] {
         --ref-height: 180px;
     }
+
     .reference-display[data-type="bike"] {
         --ref-height: 150px;
     }
+
     .reference-display[data-type="cycle"] {
         --ref-height: 140px;
     }
+
     .reference-display[data-type="person"] {
         --ref-height: 220px;
     }
@@ -1098,4 +1131,150 @@ body {
         padding-left: 28px;
         font-size: 0.85rem;
     }
+}
+
+/* =============================================================================
+   MAP STYLES
+   ============================================================================= */
+#mapPage {
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+#mapContainer {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0a2534 100%);
+    position: relative;
+}
+
+#map {
+    border-radius: 0;
+    filter: brightness(1.05) contrast(1.1);
+}
+
+#fullscreenBtn {
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+#fullscreenBtn:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+#fullscreenBtn:active {
+    background: rgba(245, 245, 245, 1) !important;
+    transform: scale(0.98);
+}
+
+/* Depth Label Styling */
+.depth-label {
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.depth-badge {
+    background: linear-gradient(135deg, #0D9589 0%, #0A7E74 100%);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(13, 149, 137, 0.45),
+        0 2px 6px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-align: center;
+    position: relative;
+    white-space: nowrap;
+    border: 2.5px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    animation: float 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+.depth-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(13, 149, 137, 0.55),
+        0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.depth-value {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    font-size: 14px;
+}
+
+.depth-arrow {
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #0A7E74;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* InfoWindow Styling */
+.gm-style .gm-style-iw-c {
+    border-radius: 16px !important;
+    padding: 4px !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25),
+        0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    background: white !important;
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+    max-width: 280px !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+    background: white !important;
+    box-shadow: -3px 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.gm-style button {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-radius: 50% !important;
+    width: 28px !important;
+    height: 28px !important;
+    top: 8px !important;
+    right: 8px !important;
+}
+
+.gm-style button:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
 }

@@ -1,0 +1,210 @@
+{% extends "bn/portal_bengali.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header compact">
+        <h1 class="page-title">বন্যার গভীরতা রিপোর্ট করুন</h1>
+        <p class="page-subtitle">রেফারেন্স ফটো সহ একটি রিপোর্ট জমা দিয়ে আপনার এলাকায় বন্যার স্তর পর্যবেক্ষণে সহায়তা করুন</p>
+    </div>
+
+    <!-- Official Notice -->
+    <!-- <div class="notice-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>আপনার রিপোর্ট কর্মকর্তাদের দ্বারা পর্যালোচনা করা হবে এবং দুর্যোগ প্রতিক্রিয়া সমন্বয়ের জন্য ব্যবহার করা হবে। দয়া করে সঠিক তথ্য প্রদান করুন।</span>
+    </div> -->
+
+    <form id="reportForm" class="card compact-form" enctype="multipart/form-data">
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>নাম</label>
+                    <input type="text" name="name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>ফোন</label>
+                    <input type="tel" name="phone" id="phone" class="form-input"
+                        minlength="10">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>রাস্তা/এলাকা</label>
+                    <input type="text" name="street" id="street" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>জোন/অঞ্চল</label>
+                    <input type="text" id="zone" name="zone" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">রেফারেন্স বস্তু</label>
+            <div class="reference-selector">
+                <div class="reference-option selected" data-type="car">
+                    <img src="/static/carsvg.svg" alt="গাড়ি">
+                    <span>গাড়ি</span>
+                </div>
+                <div class="reference-option" data-type="autorickshaw">
+                    <img src="/static/autorickshaw.svg" alt="অটো">
+                    <span>অটো</span>
+                </div>
+                <div class="reference-option" data-type="bike">
+                    <img src="/static/bikesvg.svg" alt="বাইক">
+                    <span>বাইক</span>
+                </div>
+                <div class="reference-option" data-type="cycle">
+                    <img src="/static/bicycle.svg" alt="সাইকেল">
+                    <span>সাইকেল</span>
+                </div>
+                <div class="reference-option" data-type="person">
+                    <img src="/static/person.svg" alt="ব্যক্তি">
+                    <span>ব্যক্তি</span>
+                </div>
+            </div>
+            <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
+
+            <!-- Person Height Adjustment Section -->
+            <div id="heightAdjustmentSection" class="height-adjustment hidden">
+                <div class="height-input-row">
+                    <label for="personHeightFeet">আপনার উচ্চতা:</label>
+                    <input type="number" id="personHeightFeet" value="6" min="3" max="7" step="1" class="height-feet">
+                    <span class="height-label">ফুট</span>
+                    <input type="number" id="personHeightInches" value="0" min="0" max="11" step="1"
+                        class="height-inches">
+                    <span class="height-label">ইঞ্চি</span>
+                    <span class="height-cm-display">(183 সেমি)</span>
+                </div>
+                <div class="height-presets">
+                    <button type="button" class="height-preset" data-feet="5" data-inches="0">5'0"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="4">5'4"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="7">5'7"</button>
+                    <button type="button" class="height-preset active" data-feet="6" data-inches="0">6'0"</button>
+                    <button type="button" class="height-preset" data-feet="6" data-inches="2">6'2"</button>
+                </div>
+                <p class="height-calibration-note">ডিফল্ট: 6 ফুট (183 সেমি)। সঠিক গভীরতা গণনার জন্য আপনার উচ্চতার সাথে মিল রাখতে সামঞ্জস্য করুন।</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="depth-section">
+                <div class="depth-header">
+                    <div class="depth-display">
+                        <span class="depth-value" id="depthValue">0</span>
+                        <span class="depth-unit-label" id="depthUnitLabel">মি</span>
+                    </div>
+                    <span class="depth-status" id="depthStatus">কোন বন্যা নেই</span>
+                </div>
+
+                <!-- Unit Selector -->
+                <div class="unit-selector">
+                    <button type="button" class="unit-btn active" data-unit="meter">মিটার</button>
+                    <button type="button" class="unit-btn" data-unit="feet">ফুট</button>
+                    <button type="button" class="unit-btn" data-unit="cm">সেমি</button>
+                </div>
+
+                <!-- Water Animation Visualization -->
+                <div class="depth-visual-container">
+                    <div class="reference-display" id="referenceDisplay">
+                        <img id="referenceImg" src="/static/carsvg.svg" alt="রেফারেন্স">
+                    </div>
+                    <div class="water-level" id="waterLevel">
+                    </div>
+                </div>
+
+                <div class="depth-controls">
+                    <div class="slider-row">
+                        <span>0</span>
+                        <input type="range" name="flood_depth_cm" id="flood_depth_cm" min="0" max="200" value="0">
+                        <span>200</span>
+                    </div>
+                    <div class="depth-input-group">
+                        <label for="depth_input">গভীরতা:</label>
+                        <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
+                        <span id="inputUnit">মি</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">ফটো প্রমাণ</label>
+            <div class="photo-buttons">
+                <button type="button" class="btn btn-primary" onclick="openGallery()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="m21 15-5-5L5 21" />
+                    </svg>
+                    গ্যালারি থেকে আপলোড করুন
+                </button>
+                <button type="button" class="btn btn-primary" onclick="openCamera()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                    ফটো তুলুন
+                </button>
+            </div>
+            <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <input type="file" id="photoGallery" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <div id="photoPreview" class="photo-preview hidden">
+                <img id="previewImg" alt="ফটো প্রিভিউ">
+                <p id="photoName"></p>
+            </div>
+        </div>
+
+        <!-- Camera Modal for Mobile -->
+        <div id="cameraModal" class="camera-modal">
+            <video id="cameraStream" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button type="button" onclick="closeCamera()" class="btn btn-danger">বাতিল করুন</button>
+                <button type="button" onclick="capturePhoto()" class="btn btn-capture">📷</button>
+            </div>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>মন্তব্য</label>
+                <textarea name="remarks" class="form-textarea" rows="2"
+                    placeholder="অতিরিক্ত পর্যবেক্ষণ - রাস্তার অবস্থা, উদ্ধারের প্রয়োজন, প্রভাবিত এলাকা (ঐচ্ছিক)"></textarea>
+            </div>
+        </div>
+
+        <div class="gps-status" id="gpsStatus">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="3" fill="currentColor" />
+            </svg>
+            <span id="gpsText">GPS অবস্থান প্রাপ্ত করা হচ্ছে...</span>
+        </div>
+        <input type="hidden" name="gps_lat" id="gps_lat">
+        <input type="hidden" name="gps_lon" id="gps_lon">
+        <input type="hidden" name="gps_accuracy" id="gps_accuracy">
+
+        <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q" style="margin: 20px 0;"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+            </svg>
+            বন্যা রিপোর্ট জমা দিন
+        </button>
+        <div id="formStatus" class="status-msg hidden"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/report.js"></script>
+{% endblock %}

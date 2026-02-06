@@ -17,6 +17,7 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
 
+
 @app.after_request
 def add_headers(response):
     # Security headers
@@ -45,6 +46,8 @@ for d in [DATA_DIR, SUBMISSIONS_DIR, IMAGES_DIR, THUMBNAILS_DIR, INTEL_DIR, VOLU
 from dotenv import load_dotenv
 load_dotenv()
 
+HOST=os.getenv("HOST", "0.0.0.0")
+PORT=os.getenv("PORT", 9101)
 ADMIN_USER = os.getenv('ADMIN_USER', 'admin')
 ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin')
 CAPTCHA_SECRET = os.getenv('CAPTCHA_SECRET', 'airesq')
@@ -114,16 +117,83 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+# Get Google API Key
+def get_google_api_key():
+    return os.getenv('GOOGLE_MAP_API', '')
+
+# =============================================================================
+# MAIN PORTAL ROUTES - Separate paths for each section
+# =============================================================================
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    """Home page - redirects to report page"""
+    return redirect('/report')
+
+@app.route('/report')
+def report_page():
+    """Flood Report submission page"""
+    return render_template('report.html', 
+        page='report', 
+        page_title='Report Flood',
+        google_api_key=get_google_api_key())
+
+@app.route('/volunteer')
+def volunteer_page():
+    """Volunteer registration and sign-in page"""
+    return render_template('volunteer.html', 
+        page='volunteer', 
+        page_title='Volunteer Portal',
+        google_api_key=get_google_api_key())
+
+@app.route('/map')
+def map_page():
+    """Interactive flood map with auto-refresh"""
+    return render_template('floodmap.html', 
+        page='map', 
+        page_title='Flood Map',
+        google_api_key=get_google_api_key())
+
+@app.route('/about')
+def about_page():
+    """About page with portal information"""
+    return render_template('about.html', 
+        page='about', 
+        page_title='About',
+        google_api_key=get_google_api_key())
 
 @app.route('/admin')
 def admin():
+    """Admin dashboard"""
     return render_template('admin.html')
 
-# Language support
-SUPPORTED_LANGUAGES = ['en', 'hn', 'bn', 'ta', 'te', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as', 'ur']
+# =============================================================================
+# Language support - All 22 official Indian languages plus English
+SUPPORTED_LANGUAGES = [
+    'en',  # English (default)
+    'hn',  # Hindi
+    'bn',  # Bengali
+    'te',  # Telugu
+    'mr',  # Marathi
+    'ta',  # Tamil
+    'ur',  # Urdu
+    'gu',  # Gujarati
+    'kn',  # Kannada
+    'ml',  # Malayalam
+    'od',  # Odia
+    'pa',  # Punjabi
+    'as',  # Assamese
+    'mt',  # Maithili
+    'bd',  # Bodo
+    'dg',  # Dogri
+    'km',  # Kashmiri
+    'kk',  # Konkani
+    'mp',  # Manipuri
+    'np',  # Nepali
+    'st',  # Santali
+    'sd',  # Sindhi
+    'sk'   # Sanskrit
+]
 
 def template_exists(template_name):
     """Check if a template file exists"""
@@ -148,6 +218,123 @@ def lang_admin(lang):
         if template_exists(template):
             return render_template(template)
     return redirect('/admin')
+
+@app.route('/<lang>/report')
+def lang_report(lang):
+    """Serve language-specific report page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        # Map language code to template file
+        template_map = {
+            'hn': 'hn/report_hindi.html',
+            'bn': 'bn/report_bengali.html',
+            'ta': 'ta/report_tamil.html',
+            'te': 'te/report_telugu.html',
+            'mr': 'mr/report_marathi.html',
+            'gu': 'gu/report_gujarati.html',
+            'kn': 'kn/report_kannada.html',
+            'ml': 'ml/report_malayalam.html',
+            'pa': 'pa/report_punjabi.html',
+            'od': 'od/report_odia.html',
+            'as': 'as/report_assamese.html',
+            'ur': 'ur/report_urdu.html',
+            'mt': 'mt/report_maithli.html',
+            'bd': 'bd/report_bodo.html',
+            'dg': 'dg/report_dogri.html',
+            'km': 'km/report_kashmiri.html',
+            'kk': 'kk/report_konkani.html',
+            'mp': 'mp/report_manipuri.html',
+            'np': 'np/report_nepali.html',
+            'st': 'st/report_santali.html',
+            'sd': 'sd/report_sindhi.html',
+            'sk': 'sk/report_sanskrit.html',
+        }
+        template = template_map.get(lang)
+        if template and template_exists(template):
+            return render_template(template,
+                page='report',
+                page_title='रिपोर्ट करें' if lang == 'hn' else 'Report Flood',
+                google_api_key=get_google_api_key())
+    return redirect('/report')
+
+@app.route('/<lang>/volunteer')
+def lang_volunteer(lang):
+    """Serve language-specific volunteer page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        template_map = {
+            'hn': 'hn/volunteer_hindi.html',
+            'bn': 'bn/volunteer_bengali.html',
+            'ta': 'ta/volunteer_tamil.html',
+            'te': 'te/volunteer_telugu.html',
+            'mr': 'mr/volunteer_marathi.html',
+            'gu': 'gu/volunteer_gujarati.html',
+            'kn': 'kn/volunteer_kannada.html',
+            'ml': 'ml/volunteer_malayalam.html',
+            'pa': 'pa/volunteer_punjabi.html',
+            'od': 'od/volunteer_odia.html',
+            'as': 'as/volunteer_assamese.html',
+            'ur': 'ur/volunteer_urdu.html',
+            'mt': 'mt/volunteer_maithli.html',
+            'bd': 'bd/volunteer_bodo.html',
+            'dg': 'dg/volunteer_dogri.html',
+            'km': 'km/volunteer_kashmiri.html',
+            'kk': 'kk/volunteer_konkani.html',
+            'mp': 'mp/volunteer_manipuri.html',
+            'np': 'np/volunteer_nepali.html',
+            'st': 'st/volunteer_santali.html',
+            'sd': 'sd/volunteer_sindhi.html',
+            'sk': 'sk/volunteer_sanskrit.html',
+        }
+        template = template_map.get(lang)
+        if template and template_exists(template):
+            return render_template(template,
+                page='volunteer',
+                page_title='स्वयंसेवक पोर्टल' if lang == 'hn' else 'Volunteer Portal',
+                google_api_key=get_google_api_key())
+    return redirect('/volunteer')
+
+@app.route('/<lang>/about')
+def lang_about(lang):
+    """Serve language-specific about page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        template_map = {
+            'hn': 'hn/about_hindi.html',
+            'bn': 'bn/about_bengali.html',
+            'ta': 'ta/about_tamil.html',
+            'te': 'te/about_telugu.html',
+            'mr': 'mr/about_marathi.html',
+            'gu': 'gu/about_gujarati.html',
+            'kn': 'kn/about_kannada.html',
+            'ml': 'ml/about_malayalam.html',
+            'pa': 'pa/about_punjabi.html',
+            'od': 'od/about_odia.html',
+            'as': 'as/about_assamese.html',
+            'ur': 'ur/about_urdu.html',
+            'mt': 'mt/about_maithli.html',
+            'bd': 'bd/about_bodo.html',
+            'dg': 'dg/about_dogri.html',
+            'km': 'km/about_kashmiri.html',
+            'kk': 'kk/about_konkani.html',
+            'mp': 'mp/about_manipuri.html',
+            'np': 'np/about_nepali.html',
+            'st': 'st/about_santali.html',
+            'sd': 'sd/about_sindhi.html',
+            'sk': 'sk/about_sanskrit.html',
+        }
+        template = template_map.get(lang)
+        if template and template_exists(template):
+            return render_template(template,
+                page='about',
+                page_title='के बारे में' if lang == 'hn' else 'About',
+                google_api_key=get_google_api_key())
+    return redirect('/about')
+
+@app.route('/<lang>/map')
+def lang_map(lang):
+    """Serve language-specific map page"""
+    if lang in SUPPORTED_LANGUAGES and lang != 'en':
+        # Map page might not have translations yet, redirect to English
+        pass
+    return redirect('/map')
 
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
@@ -292,6 +479,56 @@ def submit():
         print(f"Submit error: {e}")
         print(traceback.format_exc())
         return jsonify({'error': 'Server error occurred. Please try again.'}), 500
+
+@app.route('/api/submissions')
+def get_submissions():
+    """Get all submissions with GPS and received_at data for map display"""
+    try:
+        submissions = []
+        for file in SUBMISSIONS_DIR.glob('*.json'):
+            with open(file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if data.get('gps') and data['gps'].get('lat') and data['gps'].get('lon'):
+                    submissions.append({
+                        'gps': data['gps'],
+                        'received_at': data.get('received_at'),
+                        'flood_depth_cm': data.get('flood_depth_cm', 0),
+                        'id': data.get('id'),
+                        'location': data.get('zone') or data.get('street', 'Unknown location'),
+                        'street': data.get('street', ''),
+                        'name': data.get('name', 'Anonymous'),
+                        'vehicle_type': data.get('vehicle_type', '')
+                    })
+        return jsonify(submissions)
+    except Exception as e:
+        print(f"Error fetching submissions: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/portraits')
+def get_portraits():
+    """Get list of available portrait images for map markers"""
+    try:
+        portraits_path = BASE_DIR / 'static' / 'portraits'
+        portraits = []
+        
+        # Get all image files from portraits directory
+        if portraits_path.exists():
+            for file in portraits_path.iterdir():
+                if file.is_file() and file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.svg']:
+                    portraits.append(file.name)
+        
+        # Sort for consistent order
+        portraits.sort()
+        
+        # Return default portraits if none found
+        if not portraits:
+            portraits = ['m2.png', 'p2.svg', 'w1.svg', 'w2.svg', 'm1.png', 'w3.png', 'w4.png']
+        
+        return jsonify({'portraits': portraits})
+    except Exception as e:
+        print(f"Error fetching portraits: {e}")
+        # Return fallback portraits on error
+        return jsonify({'portraits': ['m2.png', 'p2.svg', 'w1.svg', 'w2.svg', 'm1.png', 'w3.png', 'w4.png']})
 
 @app.route('/crowd_data/images/<path:filename>')
 def serve_image(filename):
@@ -639,7 +876,7 @@ def get_submission(submission_id):
         return jsonify({'error': 'Server error'}), 500
 
 # AI Analysis Endpoints - Proxy to external API
-AI_API_BASE = os.getenv('AI_API_BASE', 'http://127.0.0.1:5001')
+AI_API_BASE = os.getenv('AI_API_BASE', 'http://127.0.0.1:9103')
 
 @app.route('/api/admin/ai/search', methods=['POST'])
 @requires_auth
@@ -761,6 +998,6 @@ def delete_saved_news(news_id):
         print(f"Delete news error: {e}")
         return jsonify({'error': 'Server error'}), 500
 
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=8005, debug=True)
+if __name__ == '__main__':
+    app.run(host=HOST, port=PORT, debug=True)
     

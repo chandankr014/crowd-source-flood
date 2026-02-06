@@ -1,0 +1,200 @@
+{% extends "ml/portal_malayalam.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header compact">
+        <h1 class="page-title">വെള്ളപ്പൊക്കത്തിന്റെ ആഴം റിപ്പോർട്ട് ചെയ്യുക</h1>
+        <p class="page-subtitle">റഫറൻസ് ഫോട്ടോയുള്ള റിപ്പോർട്ട് സമർപ്പിച്ച് നിങ്ങളുടെ പ്രദേശത്തെ വെള്ളപ്പൊക്ക നിലവാരം നിരീക്ഷിക്കാൻ സഹായിക്കുക</p>
+    </div>
+
+    <form id="reportForm" class="card compact-form" enctype="multipart/form-data">
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>പേര്</label>
+                    <input type="text" name="name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>ഫോൺ</label>
+                    <input type="tel" name="phone" id="phone" class="form-input"
+                        minlength="10">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>തെരുവ്/പ്രദേശം</label>
+                    <input type="text" name="street" id="street" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>സോൺ/പ്രദേശം</label>
+                    <input type="text" id="zone" name="zone" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">റഫറൻസ് വസ്തു</label>
+            <div class="reference-selector">
+                <div class="reference-option selected" data-type="car">
+                    <img src="/static/carsvg.svg" alt="കാർ">
+                    <span>കാർ</span>
+                </div>
+                <div class="reference-option" data-type="autorickshaw">
+                    <img src="/static/autorickshaw.svg" alt="ഓട്ടോ">
+                    <span>ഓട്ടോ</span>
+                </div>
+                <div class="reference-option" data-type="bike">
+                    <img src="/static/bikesvg.svg" alt="ബൈക്ക്">
+                    <span>ബൈക്ക്</span>
+                </div>
+                <div class="reference-option" data-type="cycle">
+                    <img src="/static/bicycle.svg" alt="സൈക്കിൾ">
+                    <span>സൈക്കിൾ</span>
+                </div>
+                <div class="reference-option" data-type="person">
+                    <img src="/static/person.svg" alt="വ്യക്തി">
+                    <span>വ്യക്തി</span>
+                </div>
+            </div>
+            <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
+
+            <!-- Person Height Adjustment Section -->
+            <div id="heightAdjustmentSection" class="height-adjustment hidden">
+                <div class="height-input-row">
+                    <label for="personHeightFeet">നിങ്ങളുടെ ഉയരം:</label>
+                    <input type="number" id="personHeightFeet" value="6" min="3" max="7" step="1" class="height-feet">
+                    <span class="height-label">അടി</span>
+                    <input type="number" id="personHeightInches" value="0" min="0" max="11" step="1"
+                        class="height-inches">
+                    <span class="height-label">ഇഞ്ച്</span>
+                    <span class="height-cm-display">(183 സെ.മീ)</span>
+                </div>
+                <div class="height-presets">
+                    <button type="button" class="height-preset" data-feet="5" data-inches="0">5'0"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="4">5'4"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="7">5'7"</button>
+                    <button type="button" class="height-preset active" data-feet="6" data-inches="0">6'0"</button>
+                    <button type="button" class="height-preset" data-feet="6" data-inches="2">6'2"</button>
+                </div>
+                <p class="height-calibration-note">സ്ഥിരസ്ഥിതി: 6 അടി (183 സെ.മീ). കൃത്യമായ ആഴം കണക്കാക്കാൻ നിങ്ങളുടെ ഉയരത്തിന് അനുസൃതമാക്കുക.</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="depth-section">
+                <div class="depth-header">
+                    <div class="depth-display">
+                        <span class="depth-value" id="depthValue">0</span>
+                        <span class="depth-unit-label" id="depthUnitLabel">മീ</span>
+                    </div>
+                    <span class="depth-status" id="depthStatus">വെള്ളപ്പൊക്കമില്ല</span>
+                </div>
+
+                <!-- Unit Selector -->
+                <div class="unit-selector">
+                    <button type="button" class="unit-btn active" data-unit="meter">മീറ്റർ</button>
+                    <button type="button" class="unit-btn" data-unit="feet">അടി</button>
+                    <button type="button" class="unit-btn" data-unit="cm">സെ.മീ</button>
+                </div>
+
+                <!-- Water Animation Visualization -->
+                <div class="depth-visual-container">
+                    <div class="reference-display" id="referenceDisplay">
+                        <img id="referenceImg" src="/static/carsvg.svg" alt="റഫറൻസ്">
+                    </div>
+                    <div class="water-level" id="waterLevel">
+                    </div>
+                </div>
+
+                <div class="depth-controls">
+                    <div class="slider-row">
+                        <span>0</span>
+                        <input type="range" name="flood_depth_cm" id="flood_depth_cm" min="0" max="200" value="0">
+                        <span>200</span>
+                    </div>
+                    <div class="depth-input-group">
+                        <label for="depth_input">ആഴം:</label>
+                        <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
+                        <span id="inputUnit">മീ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">ഫോട്ടോ തെളിവ്</label>
+            <div class="photo-buttons">
+                <button type="button" class="btn btn-primary" onclick="openGallery()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="m21 15-5-5L5 21" />
+                    </svg>
+                    ഗാലറിയിൽ നിന്ന് അപ്‌ലോഡ് ചെയ്യുക
+                </button>
+                <button type="button" class="btn btn-primary" onclick="openCamera()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                    ഫോട്ടോ എടുക്കുക
+                </button>
+            </div>
+            <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <input type="file" id="photoGallery" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <div id="photoPreview" class="photo-preview hidden">
+                <img id="previewImg" alt="ഫോട്ടോ പ്രിവ്യൂ">
+                <p id="photoName"></p>
+            </div>
+        </div>
+
+        <!-- Camera Modal for Mobile -->
+        <div id="cameraModal" class="camera-modal">
+            <video id="cameraStream" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button type="button" onclick="closeCamera()" class="btn btn-danger">റദ്ദാക്കുക</button>
+                <button type="button" onclick="capturePhoto()" class="btn btn-capture">📷</button>
+            </div>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>അഭിപ്രായങ്ങൾ</label>
+                <textarea name="remarks" class="form-textarea" rows="2"
+                    placeholder="അധിക നിരീക്ഷണങ്ങൾ - റോഡ് അവസ്ഥകൾ, രക്ഷാ ആവശ്യങ്ങൾ, ബാധിത പ്രദേശങ്ങൾ (ഐച്ഛികം)"></textarea>
+            </div>
+        </div>
+
+        <div class="gps-status" id="gpsStatus">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="3" fill="currentColor" />
+            </svg>
+            <span id="gpsText">GPS സ്ഥാനം നേടുന്നു...</span>
+        </div>
+        <input type="hidden" name="gps_lat" id="gps_lat">
+        <input type="hidden" name="gps_lon" id="gps_lon">
+        <input type="hidden" name="gps_accuracy" id="gps_accuracy">
+
+        <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q" style="margin: 20px 0;"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+            </svg>
+            വെള്ളപ്പൊക്ക റിപ്പോർട്ട് സമർപ്പിക്കുക
+        </button>
+        <div id="formStatus" class="status-msg hidden"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/report.js"></script>
+{% endblock %}

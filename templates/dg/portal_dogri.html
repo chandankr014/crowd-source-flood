@@ -1,0 +1,166 @@
+{% set lang = 'dg' %}
+<!DOCTYPE html>
+<html lang="doi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIResQ ClimSols - बाढ़ निगरानी ते प्रतिक्रिया पोर्टल">
+    <meta name="theme-color" content="#0A2534">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="AIResQ ClimSols">
+    <title>{{ page_title }} | AIResQ ClimSols</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/portal.css">
+    {% if page == 'report' %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% endif %}
+    {% if page in ['report', 'map'] %}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}" async defer></script>
+    {% endif %}
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/{{ lang }}/report" class="logo">
+                <!-- <img src="/static/airesq_dark.png" alt="AIResQ ClimSols"> -->
+                <div class="logo-text">
+                    <span class="logo-main">क्राउड सोर्सिंग पोर्टल</span>
+                    <span class="logo-sub">रियल-टाइम क्राउडसोर्स डेटा</span>
+                </div>
+            </a>
+            <div class="nav-links">
+                <a href="/{{ lang }}/about" class="nav-link {% if page == 'about' %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    बारे
+                </a>
+                <a href="/{{ lang }}/volunteer" class="nav-link {% if page == 'volunteer' %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    स्वयंसेवक
+                </a>
+                <a href="/{{ lang }}/report" class="nav-link {% if page == 'report' %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    बाढ़ रिपोर्ट करो
+                </a>
+                <a href="/map" class="nav-link {% if page == 'map' %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                        <line x1="8" y1="2" x2="8" y2="18"/>
+                        <line x1="16" y1="6" x2="16" y2="22"/>
+                    </svg>
+                    नक्शा
+                </a>
+
+                <!-- Language Selector -->
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-btn" onclick="toggleLangMenu(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M2 12h20"></path>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>DOI</span>
+                    </button>
+                    <div class="lang-menu">
+                        <button class="lang-menu-item" data-lang="en" onclick="switchLanguage('en')">English</button>
+                        <button class="lang-menu-item" data-lang="hn" onclick="switchLanguage('hn')">हिन्दी (Hindi)</button>
+                        <div class="lang-menu-divider"></div>
+                        <div class="lang-submenu-wrapper" id="indicSubmenu">
+                            <button class="lang-menu-item" onclick="toggleIndicSubmenu(event)">
+                                इलाकाई भाशाएं
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                                                        <div class="lang-submenu">
+                                <button class="lang-menu-item" data-lang="bn" onclick="switchLanguage('bn')">বাংলা (Bengali)</button>
+                                <button class="lang-menu-item" data-lang="ta" onclick="switchLanguage('ta')">தமிழ் (Tamil)</button>
+                                <button class="lang-menu-item" data-lang="te" onclick="switchLanguage('te')">తెలుగు (Telugu)</button>
+                                <button class="lang-menu-item" data-lang="mr" onclick="switchLanguage('mr')">मराठी (Marathi)</button>
+                                <button class="lang-menu-item" data-lang="gu" onclick="switchLanguage('gu')">ગુજરાતી (Gujarati)</button>
+                                <button class="lang-menu-item" data-lang="kn" onclick="switchLanguage('kn')">ಕನ್ನಡ (Kannada)</button>
+                                <button class="lang-menu-item" data-lang="ml" onclick="switchLanguage('ml')">മലയാളം (Malayalam)</button>
+                                <button class="lang-menu-item" data-lang="pa" onclick="switchLanguage('pa')">ਪੰਜਾਬੀ (Punjabi)</button>
+                                <button class="lang-menu-item" data-lang="od" onclick="switchLanguage('od')">ଓଡ଼ିଆ (Odia)</button>
+                                <button class="lang-menu-item" data-lang="as" onclick="switchLanguage('as')">অসমীয়া (Assamese)</button>
+                                <button class="lang-menu-item" data-lang="mt" onclick="switchLanguage('mt')">मैथिली (Maithili)</button>
+                                <button class="lang-menu-item" data-lang="ur" onclick="switchLanguage('ur')">اردو (Urdu)</button>
+                                <button class="lang-menu-item" data-lang="bd" onclick="switchLanguage('bd')">बड़ो (Bodo)</button>
+                                <button class="lang-menu-item" data-lang="dg" onclick="switchLanguage('dg')">डोगरी (Dogri)</button>
+                                <button class="lang-menu-item" data-lang="km" onclick="switchLanguage('km')">कॉशुर (Kashmiri)</button>
+                                <button class="lang-menu-item" data-lang="kk" onclick="switchLanguage('kk')">कोंकणी (Konkani)</button>
+                                <button class="lang-menu-item" data-lang="mp" onclick="switchLanguage('mp')">মৈতৈলোন্ (Manipuri)</button>
+                                <button class="lang-menu-item" data-lang="np" onclick="switchLanguage('np')">नेपाली (Nepali)</button>
+                                <button class="lang-menu-item" data-lang="st" onclick="switchLanguage('st')">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</button>
+                                <button class="lang-menu-item" data-lang="sd" onclick="switchLanguage('sd')">سنڌي (Sindhi)</button>
+                                <button class="lang-menu-item" data-lang="sk" onclick="switchLanguage('sk')">संस्कृतम् (Sanskrit)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/admin" class="nav-link admin-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    प्रशासक
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav hidden" id="mobileNav">
+        <a href="/{{ lang }}/about" class="mobile-nav-link {% if page == 'about' %}active{% endif %}">बारे</a>
+        <a href="/{{ lang }}/volunteer" class="mobile-nav-link {% if page == 'volunteer' %}active{% endif %}">स्वयंसेवक</a>
+        <a href="/{{ lang }}/report" class="mobile-nav-link {% if page == 'report' %}active{% endif %}">बाढ़ रिपोर्ट करो</a>
+        <a href="/map" class="mobile-nav-link {% if page == 'map' %}active{% endif %}">नक्शा</a>
+        <a href="/admin" class="mobile-nav-link admin-link">प्रशासक</a>
+    </div>
+
+    <main class="page-content {% if page == 'map' %}map-page{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>AIResQ ClimSols</p>
+                <p>एह् पोर्टल आधिकारिक बाढ़ निगरानी ते आपदा प्रतिक्रिया समन्वय आस्तै ऐ।</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/portal.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

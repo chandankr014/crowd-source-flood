@@ -1,0 +1,200 @@
+{% extends "km/portal_kashmiri.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header compact">
+        <h1 class="page-title">فلَڈ گَہرایی رِپورٹ کَرِو</h1>
+        <p class="page-subtitle">حَوالہٕ تصویرَن سٟتؠ رِپورٹ جَمع کٔرِتھ پَنہٕ عَلاقَس مَنٛز فلَڈ سَطَح مانیٹر کرنہٕ مَنٛز مَدَد کَرِو</p>
+    </div>
+
+    <form id="reportForm" class="card compact-form" enctype="multipart/form-data">
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>ناو</label>
+                    <input type="text" name="name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>فون</label>
+                    <input type="tel" name="phone" id="phone" class="form-input"
+                        minlength="10">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>سَڑَک/مَقامی عَلاقہٕ</label>
+                    <input type="text" name="street" id="street" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>زون/عَلاقہٕ</label>
+                    <input type="text" id="zone" name="zone" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">حَوالہٕ چیز</label>
+            <div class="reference-selector">
+                <div class="reference-option selected" data-type="car">
+                    <img src="/static/carsvg.svg" alt="گاڑی">
+                    <span>گاڑی</span>
+                </div>
+                <div class="reference-option" data-type="autorickshaw">
+                    <img src="/static/autorickshaw.svg" alt="آٹو">
+                    <span>آٹو</span>
+                </div>
+                <div class="reference-option" data-type="bike">
+                    <img src="/static/bikesvg.svg" alt="بایِک">
+                    <span>بایِک</span>
+                </div>
+                <div class="reference-option" data-type="cycle">
+                    <img src="/static/bicycle.svg" alt="سایِکِل">
+                    <span>سایِکِل</span>
+                </div>
+                <div class="reference-option" data-type="person">
+                    <img src="/static/person.svg" alt="شَخص">
+                    <span>شَخص</span>
+                </div>
+            </div>
+            <input type="hidden" name="vehicle_type" id="vehicle_type" value="car">
+
+            <!-- Person Height Adjustment Section -->
+            <div id="heightAdjustmentSection" class="height-adjustment hidden">
+                <div class="height-input-row">
+                    <label for="personHeightFeet">تُہنٛد اونٛچٲیی:</label>
+                    <input type="number" id="personHeightFeet" value="6" min="3" max="7" step="1" class="height-feet">
+                    <span class="height-label">فٹ</span>
+                    <input type="number" id="personHeightInches" value="0" min="0" max="11" step="1"
+                        class="height-inches">
+                    <span class="height-label">اِنٛچ</span>
+                    <span class="height-cm-display">(183 سؠ.مٖ.)</span>
+                </div>
+                <div class="height-presets">
+                    <button type="button" class="height-preset" data-feet="5" data-inches="0">5'0"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="4">5'4"</button>
+                    <button type="button" class="height-preset" data-feet="5" data-inches="7">5'7"</button>
+                    <button type="button" class="height-preset active" data-feet="6" data-inches="0">6'0"</button>
+                    <button type="button" class="height-preset" data-feet="6" data-inches="2">6'2"</button>
+                </div>
+                <p class="height-calibration-note">ڈیفالٹ: 6 فٹ (183 سؠ.مٖ.). درُست گَہرایی حِساب کِتاب خٲطرٕ پَنہٕ اونٛچٲییہِ مُطابِق کَرِو.</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="depth-section">
+                <div class="depth-header">
+                    <div class="depth-display">
+                        <span class="depth-value" id="depthValue">0</span>
+                        <span class="depth-unit-label" id="depthUnitLabel">مٖ</span>
+                    </div>
+                    <span class="depth-status" id="depthStatus">فلَڈ چھُ نہٕ</span>
+                </div>
+
+                <!-- Unit Selector -->
+                <div class="unit-selector">
+                    <button type="button" class="unit-btn active" data-unit="meter">مٖیٹَر</button>
+                    <button type="button" class="unit-btn" data-unit="feet">فٹ</button>
+                    <button type="button" class="unit-btn" data-unit="cm">سؠ.مٖ.</button>
+                </div>
+
+                <!-- Water Animation Visualization -->
+                <div class="depth-visual-container">
+                    <div class="reference-display" id="referenceDisplay">
+                        <img id="referenceImg" src="/static/carsvg.svg" alt="حَوالہٕ">
+                    </div>
+                    <div class="water-level" id="waterLevel">
+                    </div>
+                </div>
+
+                <div class="depth-controls">
+                    <div class="slider-row">
+                        <span>0</span>
+                        <input type="range" name="flood_depth_cm" id="flood_depth_cm" min="0" max="200" value="0">
+                        <span>200</span>
+                    </div>
+                    <div class="depth-input-group">
+                        <label for="depth_input">گَہرایی:</label>
+                        <input type="number" id="depth_input" min="0" max="200" value="0" step="any">
+                        <span id="inputUnit">مٖ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label class="section-label-inline">تصویری ثبوت</label>
+            <div class="photo-buttons">
+                <button type="button" class="btn btn-primary" onclick="openGallery()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="m21 15-5-5L5 21" />
+                    </svg>
+                    گیلَری پؠٹھٕ اَپ لوڈ کَرِو
+                </button>
+                <button type="button" class="btn btn-primary" onclick="openCamera()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                    تصویر تولِو
+                </button>
+            </div>
+            <input type="file" name="photo" id="photo" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <input type="file" id="photoGallery" accept="image/*" style="display: none;"
+                onchange="handlePhotoSelect(this)">
+            <div id="photoPreview" class="photo-preview hidden">
+                <img id="previewImg" alt="تصویر پیش منظر">
+                <p id="photoName"></p>
+            </div>
+        </div>
+
+        <!-- Camera Modal for Mobile -->
+        <div id="cameraModal" class="camera-modal">
+            <video id="cameraStream" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button type="button" onclick="closeCamera()" class="btn btn-danger">مَنسوخ</button>
+                <button type="button" onclick="capturePhoto()" class="btn btn-capture">📷</button>
+            </div>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>تَبصِرہٕ</label>
+                <textarea name="remarks" class="form-textarea" rows="2"
+                    placeholder="اِضٲفی مُشاہَدَن - سَڑَکُک حالَت، بَچٲو ضَرورَتھ، مُتاثِر عَلاقہٕ (اِختِیاری)"></textarea>
+            </div>
+        </div>
+
+        <div class="gps-status" id="gpsStatus">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="3" fill="currentColor" />
+            </svg>
+            <span id="gpsText">GPS مَقام حٲصِل کَران چھُ...</span>
+        </div>
+        <input type="hidden" name="gps_lat" id="gps_lat">
+        <input type="hidden" name="gps_lon" id="gps_lon">
+        <input type="hidden" name="gps_accuracy" id="gps_accuracy">
+
+        <div class="g-recaptcha" data-sitekey="6LcY9TksAAAAAOo51izipzTF1-bqyex-HyEjJn2Q" style="margin: 20px 0;"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+            </svg>
+            فلَڈ رِپورٹ جَمع کَرِو
+        </button>
+        <div id="formStatus" class="status-msg hidden"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/report.js"></script>
+{% endblock %}

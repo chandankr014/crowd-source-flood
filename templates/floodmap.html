@@ -1,0 +1,212 @@
+{% extends "portal.html" %}
+
+{% block content %}
+<div id="mapContainer" class="map-container">
+    <div id="map" class="map-view"></div>
+    
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <!-- Basemap Selector -->
+        <div class="basemap-selector">
+            <button class="control-btn basemap-btn active" id="basemapSatellite" onclick="setBasemap('satellite')" title="Satellite View">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>Satellite</span>
+            </button>
+            <button class="control-btn basemap-btn" id="basemapRoadmap" onclick="setBasemap('roadmap')" title="Street Map">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M9 3v18"/>
+                    <path d="M15 3v18"/>
+                    <path d="M3 9h18"/>
+                    <path d="M3 15h18"/>
+                </svg>
+                <span>Streets</span>
+            </button>
+            <button class="control-btn basemap-btn" id="basemapHybrid" onclick="setBasemap('hybrid')" title="Hybrid View">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Hybrid</span>
+            </button>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <!-- Toggle Controls Group -->
+        <div class="toggle-controls-group">
+            <!-- Labels Toggle -->
+            <button class="control-btn label-toggle active" id="labelToggle" onclick="toggleLabels()" title="Toggle depth labels">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Labels</span>
+            </button>
+            
+            <!-- Icons Toggle -->
+            <button class="control-btn label-toggle active" id="iconToggle" onclick="toggleIcons()" title="Toggle portrait icons">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                </svg>
+                <span>Icons</span>
+            </button>
+            
+            <!-- Street Labels Toggle -->
+            <button class="control-btn street-labels-toggle" id="streetLabelsToggle" onclick="toggleStreetLabels()" title="Toggle street labels">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                    <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <span>Streets</span>
+            </button>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <!-- Action Controls Group -->
+        <div class="action-controls-group">
+            <!-- Fullscreen -->
+            <button class="control-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+            
+            <!-- Refresh -->
+            <button class="control-btn" id="refreshBtn" onclick="manualRefresh()" title="Refresh data">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Quick Stats Badge -->
+    <div class="quick-stats-badge" id="quickStats">
+        <div class="quick-stat-item">
+            <div class="quick-stat-label">Active Reports</div>
+            <div class="quick-stat-value" id="quickStatsCount">0</div>
+        </div>
+        <div class="quick-stat-divider"></div>
+        <div class="quick-stat-item">
+            <div class="quick-stat-label">Avg Depth</div>
+            <div class="quick-stat-value" id="quickStatsAvg">0 cm</div>
+        </div>
+        <div class="quick-stat-divider"></div>
+        <div class="quick-stat-item">
+            <div class="quick-stat-label">Critical</div>
+            <div class="quick-stat-value critical" id="quickStatsCritical">0</div>
+        </div>
+    </div>
+    
+    <!-- Refresh Indicator -->
+    <div class="refresh-indicator" id="refreshIndicator">
+        <div class="spinner"></div>
+        <span>Refreshing...</span>
+    </div>
+    
+    <!-- Auto-refresh Status -->
+    <div class="auto-refresh-status" id="autoRefreshStatus">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Auto-refresh: <strong>1 min</strong></span>
+        <span id="nextRefresh" class="next-refresh"></span>
+    </div>
+    
+    <!-- Animation Controls -->
+    <div class="animation-controls" id="animationControls" style="display: none;">
+        <button class="anim-btn anim-btn-primary" id="animPlayPause" onclick="toggleAnimation()" title="Play/Pause animation">
+            <svg id="animPlayIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <svg id="animPauseIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display: none;">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+        </button>
+        
+        <button class="anim-btn" id="animStop" onclick="stopAnimation()" title="Stop and reset animation">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <rect x="6" y="6" width="12" height="12"/>
+            </svg>
+        </button>
+        
+        <div class="anim-divider"></div>
+        
+        <div class="anim-speed-control">
+            <label for="animSpeed" style="font-size: 11px; color: #666; margin-right: 6px;">Speed:</label>
+            <select id="animSpeed" onchange="changeAnimationSpeed()" style="padding: 2px 6px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="5">5x</option>
+                <option value="10">10x</option>
+            </select>
+        </div>
+        
+        <div class="anim-divider"></div>
+        
+        <div class="anim-progress-info" id="animProgressInfo">
+            <span id="animCurrentIndex">0</span> / <span id="animTotalCount">0</span>
+        </div>
+        
+        <div class="anim-divider"></div>
+        
+        <div class="anim-timestamp" id="animTimestamp">--:--</div>
+    </div>
+    
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <div class="info-stats">
+            <div class="info-stat">
+                <span class="stat-icon">📍</span>
+                <span id="submissionCount">Loading...</span>
+            </div>
+            <div class="info-stat">
+                <span class="stat-icon">🕒</span>
+                <span id="lastUpdate">--:--</span>
+            </div>
+        </div>
+        <div class="info-legend">
+            <h4>Depth Legend</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #4CAF50;"></span>
+                    <span>0-30 cm (Safe)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #FFC107;"></span>
+                    <span>30-60 cm (Caution)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #FF9800;"></span>
+                    <span>60-100 cm (Warning)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #F44336;"></span>
+                    <span>&gt;100 cm (Danger)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass Google API key to JavaScript
+    window.GOOGLE_API_KEY = "{{ google_api_key }}";
+</script>
+<script src="/static/floodmap.js"></script>
+{% endblock %}
