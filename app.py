@@ -82,23 +82,6 @@ def create_thumbnail(image_path, thumbnail_path, size=(300, 300)):
         print(f"Thumbnail creation error: {e}")
         return False
 
-def requires_jwt_auth(f):
-    """JWT-based authentication decorator"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.cookies.get('admin_token')
-        if not token:
-            return jsonify({'error': 'Authentication required'}), 401
-        try:
-            jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token expired, please login again'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Invalid token'}), 401
-        return f(*args, **kwargs)
-    return decorated
-
-# Keep old requires_auth for backward compatibility during transition
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -200,140 +183,43 @@ def template_exists(template_name):
     template_path = Path(app.template_folder) / template_name
     return template_path.exists()
 
-@app.route('/<lang>/')
-@app.route('/<lang>/index.html')
-def lang_index(lang):
-    """Serve language-specific index page"""
-    if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        template = f'{lang}/index.html'
-        if template_exists(template):
-            return render_template(template)
-    return redirect('/')
+# Language-to-template name mapping (used by all lang routes)
+LANG_NAMES = {
+    'hn': 'hindi', 'bn': 'bengali', 'ta': 'tamil', 'te': 'telugu',
+    'mr': 'marathi', 'gu': 'gujarati', 'kn': 'kannada', 'ml': 'malayalam',
+    'pa': 'punjabi', 'od': 'odia', 'as': 'assamese', 'ur': 'urdu',
+    'mt': 'maithli', 'bd': 'bodo', 'dg': 'dogri', 'km': 'kashmiri',
+    'kk': 'konkani', 'mp': 'manipuri', 'np': 'nepali', 'st': 'santali',
+    'sd': 'sindhi', 'sk': 'sanskrit',
+}
 
-@app.route('/<lang>/admin.html')
-def lang_admin(lang):
-    """Serve language-specific admin page"""
+def _serve_lang_page(lang, page, fallback, page_title=None):
+    """Serve a language-specific page or redirect to the English fallback."""
     if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        template = f'{lang}/admin.html'
-        if template_exists(template):
-            return render_template(template)
-    return redirect('/admin')
+        name = LANG_NAMES.get(lang)
+        if name:
+            template = f'{lang}/{page}_{name}.html'
+            if template_exists(template):
+                return render_template(template,
+                    page=page,
+                    page_title=page_title or page.title(),
+                    google_api_key=get_google_api_key())
+    return redirect(fallback)
 
 @app.route('/<lang>/report')
 def lang_report(lang):
-    """Serve language-specific report page"""
-    if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        # Map language code to template file
-        template_map = {
-            'hn': 'hn/report_hindi.html',
-            'bn': 'bn/report_bengali.html',
-            'ta': 'ta/report_tamil.html',
-            'te': 'te/report_telugu.html',
-            'mr': 'mr/report_marathi.html',
-            'gu': 'gu/report_gujarati.html',
-            'kn': 'kn/report_kannada.html',
-            'ml': 'ml/report_malayalam.html',
-            'pa': 'pa/report_punjabi.html',
-            'od': 'od/report_odia.html',
-            'as': 'as/report_assamese.html',
-            'ur': 'ur/report_urdu.html',
-            'mt': 'mt/report_maithli.html',
-            'bd': 'bd/report_bodo.html',
-            'dg': 'dg/report_dogri.html',
-            'km': 'km/report_kashmiri.html',
-            'kk': 'kk/report_konkani.html',
-            'mp': 'mp/report_manipuri.html',
-            'np': 'np/report_nepali.html',
-            'st': 'st/report_santali.html',
-            'sd': 'sd/report_sindhi.html',
-            'sk': 'sk/report_sanskrit.html',
-        }
-        template = template_map.get(lang)
-        if template and template_exists(template):
-            return render_template(template,
-                page='report',
-                page_title='रिपोर्ट करें' if lang == 'hn' else 'Report Flood',
-                google_api_key=get_google_api_key())
-    return redirect('/report')
+    return _serve_lang_page(lang, 'report', '/report', 'Report Flood')
 
 @app.route('/<lang>/volunteer')
 def lang_volunteer(lang):
-    """Serve language-specific volunteer page"""
-    if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        template_map = {
-            'hn': 'hn/volunteer_hindi.html',
-            'bn': 'bn/volunteer_bengali.html',
-            'ta': 'ta/volunteer_tamil.html',
-            'te': 'te/volunteer_telugu.html',
-            'mr': 'mr/volunteer_marathi.html',
-            'gu': 'gu/volunteer_gujarati.html',
-            'kn': 'kn/volunteer_kannada.html',
-            'ml': 'ml/volunteer_malayalam.html',
-            'pa': 'pa/volunteer_punjabi.html',
-            'od': 'od/volunteer_odia.html',
-            'as': 'as/volunteer_assamese.html',
-            'ur': 'ur/volunteer_urdu.html',
-            'mt': 'mt/volunteer_maithli.html',
-            'bd': 'bd/volunteer_bodo.html',
-            'dg': 'dg/volunteer_dogri.html',
-            'km': 'km/volunteer_kashmiri.html',
-            'kk': 'kk/volunteer_konkani.html',
-            'mp': 'mp/volunteer_manipuri.html',
-            'np': 'np/volunteer_nepali.html',
-            'st': 'st/volunteer_santali.html',
-            'sd': 'sd/volunteer_sindhi.html',
-            'sk': 'sk/volunteer_sanskrit.html',
-        }
-        template = template_map.get(lang)
-        if template and template_exists(template):
-            return render_template(template,
-                page='volunteer',
-                page_title='स्वयंसेवक पोर्टल' if lang == 'hn' else 'Volunteer Portal',
-                google_api_key=get_google_api_key())
-    return redirect('/volunteer')
+    return _serve_lang_page(lang, 'volunteer', '/volunteer', 'Volunteer Portal')
 
 @app.route('/<lang>/about')
 def lang_about(lang):
-    """Serve language-specific about page"""
-    if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        template_map = {
-            'hn': 'hn/about_hindi.html',
-            'bn': 'bn/about_bengali.html',
-            'ta': 'ta/about_tamil.html',
-            'te': 'te/about_telugu.html',
-            'mr': 'mr/about_marathi.html',
-            'gu': 'gu/about_gujarati.html',
-            'kn': 'kn/about_kannada.html',
-            'ml': 'ml/about_malayalam.html',
-            'pa': 'pa/about_punjabi.html',
-            'od': 'od/about_odia.html',
-            'as': 'as/about_assamese.html',
-            'ur': 'ur/about_urdu.html',
-            'mt': 'mt/about_maithli.html',
-            'bd': 'bd/about_bodo.html',
-            'dg': 'dg/about_dogri.html',
-            'km': 'km/about_kashmiri.html',
-            'kk': 'kk/about_konkani.html',
-            'mp': 'mp/about_manipuri.html',
-            'np': 'np/about_nepali.html',
-            'st': 'st/about_santali.html',
-            'sd': 'sd/about_sindhi.html',
-            'sk': 'sk/about_sanskrit.html',
-        }
-        template = template_map.get(lang)
-        if template and template_exists(template):
-            return render_template(template,
-                page='about',
-                page_title='के बारे में' if lang == 'hn' else 'About',
-                google_api_key=get_google_api_key())
-    return redirect('/about')
+    return _serve_lang_page(lang, 'about', '/about', 'About')
 
 @app.route('/<lang>/map')
 def lang_map(lang):
-    """Serve language-specific map page"""
-    if lang in SUPPORTED_LANGUAGES and lang != 'en':
-        # Map page might not have translations yet, redirect to English
-        pass
     return redirect('/map')
 
 @app.route('/api/admin/login', methods=['POST'])
@@ -388,7 +274,6 @@ def submit():
         phone = request.form.get('phone', '').strip()
         street = request.form.get('street', '').strip()
         zone = request.form.get('zone', '').strip()
-        # ward = request.form.get('ward', '').strip()
         vehicle_type = request.form.get('vehicle_type', '').strip()
         flood_depth_cm = request.form.get('flood_depth_cm', '').strip()
         remarks = request.form.get('remarks', '').strip()
@@ -452,7 +337,6 @@ def submit():
             'phone': phone,
             'street': street,
             'zone': zone,
-            # 'ward': ward,
             'vehicle_type': vehicle_type,
             'flood_depth_cm': depth_num,
             'remarks': remarks,
@@ -561,7 +445,6 @@ def admin_submissions():
                     'id': obj['id'],
                     'name': obj['name'],
                     'phone': obj['phone'],
-                    # 'ward': obj.get('ward', ''),
                     'zone': obj.get('zone', ''),
                     'street': obj.get('street', ''),
                     'vehicle_type': obj.get('vehicle_type', ''),

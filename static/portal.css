@@ -624,7 +624,6 @@ body {
 
 .btn-primary:hover {
     background: #0B857A;
-    transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
 
@@ -1317,18 +1316,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    animation: slideInRight 0.4s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
 }
 
 .basemap-selector {
@@ -1562,18 +1549,6 @@ body {
     border: 1px solid rgba(10, 37, 52, 0.08);
     font-size: 0.85rem;
     font-weight: 500;
-    animation: slideInLeft 0.3s ease-out;
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
 }
 
 .anim-btn {
@@ -1593,7 +1568,6 @@ body {
 .anim-btn:hover {
     background: var(--gov-secondary);
     color: white;
-    transform: scale(1.05);
 }
 
 .anim-btn-primary {
@@ -1646,18 +1620,6 @@ body {
     border: 1px solid rgba(10, 37, 52, 0.08);
     overflow: hidden;
     transition: all 0.3s ease;
-    animation: slideInDown 0.5s ease-out;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
 }
 
 .quick-stats-badge:hover {
@@ -1695,21 +1657,6 @@ body {
     color: #F44336;
 }
 
-.quick-stat-value.pulse {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-}
-
 .quick-stat-divider {
     width: 1px;
     height: 40px;
@@ -1734,7 +1681,6 @@ body {
 
 .info-panel:hover {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
-    transform: translateY(-2px);
 }
 
 .info-header {
@@ -1786,7 +1732,6 @@ body {
 
 .info-stat:hover {
     background: linear-gradient(135deg, rgba(13, 149, 137, 0.12) 0%, rgba(10, 37, 52, 0.08) 100%);
-    transform: translateX(2px);
 }
 
 .stat-icon {
@@ -1837,7 +1782,6 @@ body {
 
 .legend-item:hover {
     background: rgba(13, 149, 137, 0.05);
-    transform: translateX(2px);
 }
 
 .legend-color {

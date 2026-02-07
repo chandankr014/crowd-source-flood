@@ -1,7 +1,5 @@
 import os
-import multiprocessing
 import signal
-import sys
 
 # Server socket
 bind = "0.0.0.0:8005"
@@ -48,10 +46,6 @@ def on_reload(server):
 def when_ready(server):
     """Called just after the server is started."""
     print(f"Gunicorn master ready. Workers: {workers}")
-
-def pre_fork(server, worker):
-    """Called just before a worker is forked."""
-    pass
 
 def post_fork(server, worker):
     """Called just after a worker has been forked."""

@@ -19,13 +19,11 @@ Minimal, field-usable platform to collect flood depth + photo proofs from citize
    ```powershell
    python server.py
    ```
-   See [WAITRESS_GUIDE.md](WAITRESS_GUIDE.md) for Windows production setup.
    
    **Linux/Unix (Recommended):**
    ```bash
    gunicorn --config gunicorn.conf.py app:app
    ```
-   See [GUNICORN_GUIDE.md](GUNICORN_GUIDE.md) for Linux production setup.
    
    **Development (All Platforms):**
    ```bash
@@ -48,8 +46,8 @@ Minimal, field-usable platform to collect flood depth + photo proofs from citize
 
 ## Public Submission
 - **Mobile-First**: Optimized for field use.
-- **Required Fields**: Name, phone, flood depth (slider), photo proof, and simple captcha.
-- **Optional Fields**: Street, zone, ward, vehicle type, and remarks.
+- **Required Fields**: Flood depth (slider), photo proof, and reCAPTCHA.
+- **Optional Fields**: Name, phone, street, zone, vehicle type, and remarks.
 - **Auto-Capture**: Automatically records GPS coordinates and timestamps.
 
 ## Storage Structure

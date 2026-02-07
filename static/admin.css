@@ -122,8 +122,6 @@ body {
 
 .back-btn:hover {
     background: var(--primary-teal-light);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
 }
 
 /* Admin Section */
@@ -144,18 +142,6 @@ body {
     max-width: 500px;
     margin: 0 auto;
     box-shadow: var(--glass-shadow);
-    animation: fadeInUp 0.5s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .auth-card h2 {
@@ -224,7 +210,6 @@ body {
 }
 
 .auth-btn:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(13, 149, 137, 0.35);
 }
 
@@ -262,7 +247,6 @@ body {
 
 .admin-controls.active {
     display: block;
-    animation: fadeInUp 0.4s ease-out;
 }
 
 .control-panel {
@@ -278,7 +262,6 @@ body {
 }
 
 .control-panel:hover {
-    transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(10, 37, 52, 0.15);
 }
 
@@ -355,7 +338,6 @@ body {
 }
 
 .submission-card:hover {
-    transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(10, 37, 52, 0.18);
     border-color: var(--gov-accent);
 }
@@ -366,12 +348,8 @@ body {
     object-fit: cover;
     border-radius: 12px;
     border: 1px solid var(--glass-border);
-    transition: transform 0.3s ease;
 }
 
-.submission-card:hover .submission-thumb {
-    transform: scale(1.02);
-}
 
 .submission-info {
     flex: 1;
@@ -432,14 +410,8 @@ body {
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 12px 40px rgba(10, 37, 52, 0.18);
 }
-
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stat-card:nth-child(4) { animation-delay: 0.4s; }
 
 .stat-label {
     font-size: 0.8rem;
@@ -504,7 +476,6 @@ body {
 .tab-btn:hover {
     background: var(--primary-teal-dim);
     color: var(--primary-teal);
-    transform: translateY(-1px);
 }
 
 .tab-btn.active {
@@ -610,7 +581,6 @@ body {
 
 .btn-accent:hover {
     background: linear-gradient(135deg, var(--gov-accent-light), var(--gov-accent));
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(13, 149, 137, 0.35);
 }
 
@@ -688,7 +658,6 @@ body {
 }
 
 .view-btn:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(13, 149, 137, 0.35);
 }
 
@@ -775,19 +744,8 @@ body {
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 24px 64px rgba(10, 37, 52, 0.35);
-    animation: slideUp 0.4s ease-out;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
 
 .modal-header {
     display: flex;
@@ -868,7 +826,6 @@ body {
 }
 
 .btn-valid:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
 }
 
@@ -887,7 +844,6 @@ body {
 }
 
 .btn-invalid:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
 }
 
@@ -943,7 +899,6 @@ body {
 .filter-btn:hover {
     border-color: var(--gov-accent);
     color: var(--gov-accent);
-    transform: translateY(-1px);
 }
 
 .filter-btn.active {
@@ -1001,7 +956,6 @@ body {
     transition: all 0.2s ease;
 }
 
-.lang-dropdown:hover .lang-menu,
 .lang-dropdown.open .lang-menu {
     opacity: 1;
     visibility: visible;
@@ -1064,7 +1018,7 @@ body {
     overflow-y: auto;
 }
 
-.lang-submenu-wrapper:hover .lang-submenu {
+.lang-submenu-wrapper.open .lang-submenu {
     opacity: 1;
     visibility: visible;
     transform: translateX(4px);
@@ -1210,11 +1164,11 @@ body {
         border: 1px solid var(--border-color);
         transform: translateX(-10px);
         opacity: 0;
-        visibility: visible;
+        visibility: hidden;
         display: block;
     }
 
-    .lang-submenu-wrapper:hover .lang-submenu {
+    .lang-submenu-wrapper.open .lang-submenu {
         opacity: 1;
         visibility: visible;
         transform: translateX(4px);

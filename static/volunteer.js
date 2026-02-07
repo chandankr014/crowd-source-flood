@@ -32,45 +32,6 @@ function showVolunteerTab(tab) {
 }
 
 // =============================================================================
-// CHECKBOX & RADIO HANDLING
-// =============================================================================
-
-function toggleCheckbox(el, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    el.classList.toggle('selected');
-    const checkbox = el.querySelector('input[type="checkbox"]');
-    if (checkbox) {
-        checkbox.checked = el.classList.contains('selected');
-    }
-}
-
-function selectRadio(el, name, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    // Deselect all in group
-    const group = el.closest('.radio-group');
-    if (group) {
-        group.querySelectorAll('.radio-item').forEach(item => {
-            item.classList.remove('selected');
-            const radio = item.querySelector('input[type="radio"]');
-            if (radio) radio.checked = false;
-        });
-    }
-    
-    // Select clicked item
-    el.classList.add('selected');
-    const radio = el.querySelector('input[type="radio"]');
-    if (radio) radio.checked = true;
-}
-
-// =============================================================================
 // FORM SUBMISSIONS
 // =============================================================================
 

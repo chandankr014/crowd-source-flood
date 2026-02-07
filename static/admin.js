@@ -1,6 +1,5 @@
 /* AIResQ ClimSols - Admin Page JavaScript (Hindi) */
 
-let authHeader = '';
 let allSubmissions = [];
 let allVolunteers = [];
 let currentTab = 'submissions';
@@ -55,6 +54,7 @@ function switchTab(tabName) {
         document.getElementById('socialTab').classList.remove('hidden');
     } else if (tabName === 'ai') {
         document.getElementById('aiTab').classList.remove('hidden');
+        refreshSavedNews();
     }
 }
 
@@ -315,7 +315,7 @@ function filterVolunteers() {
 async function exportCSV() {
     try {
         const response = await fetch('/api/admin/export.csv', {
-            headers: { 'Authorization': authHeader }
+            credentials: 'same-origin'
         });
 
         if (!response.ok) throw new Error('Export failed');
@@ -332,11 +332,6 @@ async function exportCSV() {
     } catch (error) {
         alert('Export failed: ' + error.message);
     }
-}
-
-// Configure scraper
-function configureScraper() {
-    alert('Web/Social Media scraper configuration coming soon. Use your own endpoint to fetch scraped data.');
 }
 
 // Step 1: Search for URLs
@@ -363,7 +358,6 @@ async function performAISearch() {
         const response = await fetch('/api/admin/ai/search', {
             method: 'POST',
             headers: {
-                'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ query, max_urls: maxUrls })
@@ -433,9 +427,9 @@ async function extractFromUrls() {
         const response = await fetch('/api/admin/ai/extract', {
             method: 'POST',
             headers: {
-                'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({ urls: selectedUrls })
         });
 
@@ -635,9 +629,9 @@ async function saveNewsToRecords() {
         const response = await fetch('/api/admin/ai/news/save', {
             method: 'POST',
             headers: {
-                'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 query: currentSearchQuery,
                 source_urls: currentUrls,
@@ -667,7 +661,7 @@ async function refreshSavedNews() {
 
     try {
         const response = await fetch('/api/admin/ai/news', {
-            headers: { 'Authorization': authHeader }
+            credentials: 'same-origin'
         });
 
         if (!response.ok) throw new Error('Failed to fetch saved news');
@@ -740,7 +734,7 @@ async function deleteSavedNews(newsId) {
     try {
         const response = await fetch(`/api/admin/ai/news/${newsId}`, {
             method: 'DELETE',
-            headers: { 'Authorization': authHeader }
+            credentials: 'same-origin'
         });
 
         if (!response.ok) throw new Error('Delete failed');
@@ -805,9 +799,9 @@ async function verifySubmission(status) {
         const response = await fetch(`/api/admin/verify/${currentSubmissionId}`, {
             method: 'POST',
             headers: {
-                'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({ status: status })
         });
 
@@ -829,109 +823,55 @@ async function verifySubmission(status) {
     }
 }
 
-// ==================== LANGUAGE SWITCHING ====================
-const LANGUAGES = {
-    'en': { name: 'English', suffix: '' },
-    'hn': { name: 'हिंदी', suffix: '_hn' },
-    'bn': { name: 'বাংলা', suffix: '_bn' },
-    'ta': { name: 'தமிழ்', suffix: '_ta' },
-    'te': { name: 'తెలుగు', suffix: '_te' },
-    'mr': { name: 'मराठी', suffix: '_mr' },
-    'gu': { name: 'ગુજરાતી', suffix: '_gu' },
-    'kn': { name: 'ಕನ್ನಡ', suffix: '_kn' },
-    'ml': { name: 'മലയാളം', suffix: '_ml' },
-    'pa': { name: 'ਪੰਜਾਬੀ', suffix: '_pa' },
-    'or': { name: 'ଓଡ଼ିଆ', suffix: '_or' },
-    'as': { name: 'অসমীয়া', suffix: '_as' },
-    'ur': { name: 'اردو', suffix: '_ur' }
-};
+// Language menu (click-only)
+function toggleLangMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
 
-function getPageBase() {
-    let path = window.location.pathname;
-    let filename = path.split('/').pop() || 'admin';
-    filename = filename.replace(/\.html$/, '');
-    filename = filename.replace(/(_hn|_bn|_ta|_te|_mr|_gu|_kn|_ml|_pa|_or|_as|_ur)$/, '');
-    return filename || 'admin';
-}
+    const dropdown = document.getElementById('langDropdown');
+    const submenu = document.getElementById('indicSubmenu');
+    if (!dropdown) return;
 
-function getCurrentLang() {
-    const path = window.location.pathname;
-    const match = path.match(/(_hn|_bn|_ta|_te|_mr|_gu|_kn|_ml|_pa|_or|_as|_ur)(?:\.html)?$/);
-    if (match) return match[1].substring(1);
-    return 'en';
-}
-
-function switchLanguage(langCode) {
-    // Save preference but don't redirect admin panel
-    // Admin panel stays accessible at /admin in English
-    localStorage.setItem('preferredLang', langCode);
-    
-    // Update UI to show selected language (visual feedback only)
-    highlightCurrentLang();
-    
-    // Show message that admin panel is English-only
-    const authStatus = document.getElementById('authStatus');
-    if (authStatus && langCode !== 'en') {
-        authStatus.textContent = 'Admin panel is available in English only. Language preference saved for other pages.';
-        authStatus.className = 'auth-status info';
-        authStatus.style.display = 'block';
-        setTimeout(() => {
-            authStatus.style.display = 'none';
-        }, 3000);
+    dropdown.classList.toggle('open');
+    if (!dropdown.classList.contains('open') && submenu) {
+        submenu.classList.remove('open');
     }
 }
 
-function toggleLangMenu(event) {
-    event.stopPropagation();
-    document.getElementById('langDropdown').classList.toggle('open');
-}
-
 function toggleIndicSubmenu(event) {
+    event.preventDefault();
     event.stopPropagation();
-    document.getElementById('indicSubmenu').classList.toggle('open');
+
+    const submenu = document.getElementById('indicSubmenu');
+    if (submenu) submenu.classList.toggle('open');
 }
 
-function highlightCurrentLang() {
-    const currentLang = getCurrentLang();
-    document.querySelectorAll('.lang-menu-item[data-lang]').forEach(item => {
-        item.classList.toggle('active', item.dataset.lang === currentLang);
-    });
-}
+function switchLanguage(langCode) {
+    const status = document.getElementById('authStatus');
+    if (!status) return;
 
-function initLanguagePreference() {
-    // Admin panel stays in English by default - no auto-redirect
-    // Users can manually switch language if needed
-    highlightCurrentLang();
+    status.textContent = langCode === 'en'
+        ? 'Language set to English.'
+        : 'Admin panel is English-only. Language preference applies to portal pages.';
+    status.className = 'auth-status info';
+    status.style.display = 'block';
+    setTimeout(() => {
+        status.style.display = 'none';
+    }, 3000);
 }
 
 // Event Listeners
 document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('langDropdown');
+    const submenu = document.getElementById('indicSubmenu');
     if (dropdown && !dropdown.contains(e.target)) {
         dropdown.classList.remove('open');
+        if (submenu) submenu.classList.remove('open');
     }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // CRITICAL FIX: Clear bad language preference that causes redirect loop
-    const savedLang = localStorage.getItem('preferredLang');
-    if (savedLang && savedLang !== 'en') {
-        console.log('Clearing problematic language preference:', savedLang);
-        localStorage.removeItem('preferredLang');
-        // Also delete all language-related keys to be safe
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.includes('lang')) {
-                keysToRemove.push(key);
-            }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-    }
-    
     checkExistingSession();
-    // Removed auto-redirect on page load to prevent navigation issues
-    initLanguagePreference();
     
     // Modal event listeners
     const modal = document.getElementById('submissionModal');
