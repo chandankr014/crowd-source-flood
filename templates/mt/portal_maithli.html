@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/portal.css">
     {% if page == 'report' %}
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     {% endif %}
     {% if page in ['report', 'map'] %}
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}" async defer></script>

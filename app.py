@@ -52,7 +52,7 @@ ADMIN_USER = os.getenv('ADMIN_USER', 'admin')
 ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin')
 CAPTCHA_SECRET = os.getenv('CAPTCHA_SECRET', 'airesq')
 JWT_SECRET = os.getenv('JWT_SECRET', secrets.token_hex(32))  # JWT signing secret
-RECAPTCHA_SECRET = os.getenv('RECAPTCHA_PRIVATE_KEY', '')  # Google reCAPTCHA secret
+TURNSTILE_SECRET = os.getenv('TURNSTILE_PRIVATE_KEY', '')  # Cloudflare Turnstile secret
 X_BEARER_TOKEN = os.getenv('X_BEARER_TOKEN', '')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'openrouter/auto')
@@ -295,18 +295,18 @@ def submit():
             except ValueError:
                 depth_num = 0
 
-        # reCAPTCHA verification (required)
-        recaptcha_token = request.form.get('g-recaptcha-response', '').strip()
-        if not recaptcha_token:
-            return jsonify({'error': 'Please complete the reCAPTCHA verification'}), 400
+        # Turnstile verification (required)
+        turnstile_token = request.form.get('cf-turnstile-response', '').strip()
+        if not turnstile_token:
+            return jsonify({'error': 'Please complete the Turnstile verification'}), 400
         
-        if RECAPTCHA_SECRET:
-            recaptcha_response = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
-                'secret': RECAPTCHA_SECRET,
-                'response': recaptcha_token
+        if TURNSTILE_SECRET:
+            turnstile_response = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data={
+                'secret': TURNSTILE_SECRET,
+                'response': turnstile_token
             })
-            if not recaptcha_response.json().get('success'):
-                return jsonify({'error': 'reCAPTCHA verification failed. Please try again.'}), 400
+            if not turnstile_response.json().get('success'):
+                return jsonify({'error': 'Turnstile verification failed. Please try again.'}), 400
 
         # Generate timestamp and random string for submission ID
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
