@@ -8,7 +8,7 @@
 const CALIBRATION = {
     SCALE_MAX_CM: 200,
     CONTAINER_HEIGHT_PX: 180,
-    BOTTOM_OFFSET_PX: 8,
+    BOTTOM_OFFSET_PX: 0,
 
     get PX_PER_CM() {
         return (this.CONTAINER_HEIGHT_PX - this.BOTTOM_OFFSET_PX) / this.SCALE_MAX_CM;
