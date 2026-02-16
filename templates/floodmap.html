@@ -39,37 +39,6 @@
         
         <div class="control-divider"></div>
         
-        <!-- Toggle Controls Group -->
-        <div class="toggle-controls-group">
-            <!-- Labels Toggle -->
-            <button class="control-btn label-toggle active" id="labelToggle" onclick="toggleLabels()" title="Toggle depth labels">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <span>Labels</span>
-            </button>
-            
-            <!-- Icons Toggle -->
-            <button class="control-btn label-toggle active" id="iconToggle" onclick="toggleIcons()" title="Toggle portrait icons">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-                </svg>
-                <span>Icons</span>
-            </button>
-            
-            <!-- Street Labels Toggle -->
-            <button class="control-btn street-labels-toggle" id="streetLabelsToggle" onclick="toggleStreetLabels()" title="Toggle street labels">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                    <line x1="4" y1="22" x2="4" y2="15"/>
-                </svg>
-                <span>Streets</span>
-            </button>
-        </div>
-        
-        <div class="control-divider"></div>
-        
         <!-- Action Controls Group -->
         <div class="action-controls-group">
             <!-- Fullscreen -->
@@ -116,12 +85,14 @@
     
     <!-- Auto-refresh Status -->
     <div class="auto-refresh-status" id="autoRefreshStatus">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
         </svg>
         <span>Auto-refresh: <strong>1 min</strong></span>
         <span id="nextRefresh" class="next-refresh"></span>
+        <span class="status-dot" id="statusDot"></span>
+        <span id="lastUpdate" class="last-updated">Updated</span>
     </div>
     
     <!-- Animation Controls -->
@@ -161,41 +132,28 @@
             <span id="animCurrentIndex">0</span> / <span id="animTotalCount">0</span>
         </div>
         
-        <div class="anim-divider"></div>
-        
-        <div class="anim-timestamp" id="animTimestamp">--:--</div>
     </div>
     
     <!-- Info Panel -->
     <div class="info-panel">
-        <div class="info-stats">
-            <div class="info-stat">
-                <span class="stat-icon">📍</span>
-                <span id="submissionCount">Loading...</span>
-            </div>
-            <div class="info-stat">
-                <span class="stat-icon">🕒</span>
-                <span id="lastUpdate">--:--</span>
-            </div>
-        </div>
         <div class="info-legend">
             <h4>Depth Legend</h4>
             <div class="legend-items">
                 <div class="legend-item">
                     <span class="legend-color" style="background: #4CAF50;"></span>
-                    <span>0-30 cm (Safe)</span>
+                    <span>0-30 cm · Safe</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-color" style="background: #FFC107;"></span>
-                    <span>30-60 cm (Caution)</span>
+                    <span>30-60 cm · Caution</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-color" style="background: #FF9800;"></span>
-                    <span>60-100 cm (Warning)</span>
+                    <span>60-100 cm · Warning</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-color" style="background: #F44336;"></span>
-                    <span>&gt;100 cm (Danger)</span>
+                    <span>&gt;100 cm · Danger</span>
                 </div>
             </div>
         </div>

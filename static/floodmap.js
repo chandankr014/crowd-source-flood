@@ -32,8 +32,6 @@ const AUTO_REFRESH_INTERVAL = 60000;
 let map = null;
 let markers = [];
 let labelOverlays = [];
-let showDepthLabels = true;
-let showIcons = true;
 let showStreetLabels = false;
 let currentBasemap = 'satellite';
 let autoRefreshTimer = null;
@@ -47,23 +45,6 @@ let animationTimer = null;
 let isAnimating = false;
 let currentAnimationIndex = 0;
 let animationSpeed = 1; // 1x speed by default
-
-// Portrait images for markers
-
-// Load all portrait images from static/portraits/ folder
-let portraits = [];
-
-async function loadPortraits() {
-    try {
-        const res = await fetch('/api/portraits');
-        const data = await res.json();
-        portraits = data.portraits || [];
-        console.log(`Loaded ${portraits.length} portraits`);
-    } catch (err) {
-        console.error('Error loading portraits:', err);
-        portraits = ['m2.png', 'p2.svg', 'w1.svg', 'w2.svg', 'm1.png', 'w3.png', 'w4.png']; // Fallback
-    }
-}
 
 // =============================================================================
 // POSITION PERSISTENCE
@@ -126,7 +107,7 @@ function initMap() {
         disableDefaultUI: true,
         zoomControl: true,
         zoomControlOptions: {
-            position: google.maps.ControlPosition.LEFT_CENTER
+            position: google.maps.ControlPosition.RIGHT_BOTTOM
         },
         mapTypeControl: false,
         streetViewControl: false,
@@ -178,9 +159,9 @@ function setBasemap(type) {
             break;
     }
     
-    // Apply custom styles if needed
+    // Apply custom styles for each basemap mode
     if (type === 'roadmap') {
-        map.setOptions({ styles: showStreetLabels ? [] : getMapStyles() });
+        map.setOptions({ styles: [] });
     } else {
         map.setOptions({ styles: [] });
     }
@@ -317,28 +298,27 @@ function createMarker(sub, index) {
     const position = { lat: sub.gps.lat, lng: sub.gps.lon };
     const depthCm = sub.flood_depth_cm || 0;
     const depthM = (depthCm / 100).toFixed(2);
-    const portrait = portraits[index % portraits.length];
 
-    // Create custom marker icon based on depth
+    // Get marker color based on depth
     const markerColor = getDepthColor(depthCm);
     
-    // Create marker
+    // Create invisible marker (used only for position tracking)
     const marker = new google.maps.Marker({
         position: position,
         map: map,
         icon: {
-            url: `/static/portraits/${portrait}`,
-            scaledSize: new google.maps.Size(32, 32),
-            anchor: new google.maps.Point(16, 32)
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 0,
+            fillOpacity: 0,
+            strokeOpacity: 0
         },
         optimized: false,
-        visible: showIcons,
-        zIndex: 100,
-        animation: google.maps.Animation.DROP
+        visible: false,
+        zIndex: 0
     });
 
-    // Create depth label overlay
-    const labelOverlay = createLabelOverlay(marker, depthM, depthCm);
+    // Create depth label overlay with click functionality
+    const labelOverlay = createLabelOverlay(marker, depthM, depthCm, sub);
     labelOverlay.setMap(map);
     labelOverlays.push(labelOverlay);
 
@@ -376,11 +356,7 @@ function createMarker(sub, index) {
         disableAutoPan: false
     });
 
-    marker.addListener('click', () => {
-        markers.forEach(m => m.infoWindow && m.infoWindow.close());
-        infoWindow.open(map, marker);
-    });
-
+    // Store info window on marker
     marker.infoWindow = infoWindow;
     return marker;
 }
@@ -408,12 +384,20 @@ function getDepthLabel(depthCm) {
 // LABEL OVERLAY
 // =============================================================================
 
-function createLabelOverlay(marker, depthText, depthCm) {
+function createLabelOverlay(marker, depthText, depthCm, submissionData) {
     const color = getDepthColor(depthCm);
     
     const labelDiv = document.createElement('div');
     labelDiv.className = 'depth-label-overlay';
     labelDiv.innerHTML = `
+        <div style="
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid ${color};
+            margin: 0 auto;
+        "></div>
         <div style="
             display: flex;
             align-items: center;
@@ -426,28 +410,60 @@ function createLabelOverlay(marker, depthText, depthCm) {
             font: 600 12px/1.2 Inter, Arial, sans-serif;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         ">
             ${depthText}m
         </div>
-        <div style="
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid ${color};
-            margin: 0 auto;
-        "></div>
     `;
 
     const overlay = new google.maps.OverlayView();
 
     overlay.onAdd = function() {
         const panes = this.getPanes();
-        panes.overlayLayer.appendChild(labelDiv);
+        panes.overlayMouseTarget.appendChild(labelDiv);
         labelDiv.style.position = 'absolute';
-        labelDiv.style.display = showDepthLabels ? 'block' : 'none';
-        labelDiv.style.pointerEvents = 'none';
+        labelDiv.style.display = 'block';
+        labelDiv.style.pointerEvents = 'auto';
         labelDiv.style.zIndex = '200';
+        labelDiv.setAttribute('role', 'button');
+        labelDiv.setAttribute('tabindex', '0');
+        labelDiv.setAttribute('aria-label', `Show details for ${depthText} meters flood report`);
+        
+        // Add hover effects
+        const labelContent = labelDiv.querySelectorAll('div')[1];
+        labelContent.addEventListener('mouseenter', () => {
+            labelContent.style.transform = 'scale(1.1)';
+            labelContent.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+        });
+        labelContent.addEventListener('mouseleave', () => {
+            labelContent.style.transform = 'scale(1)';
+            labelContent.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+        });
+        
+        // Add click handler to show info window
+        const openMetadata = (event) => {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // Close all other info windows
+            markers.forEach(m => m.infoWindow && m.infoWindow.close());
+
+            // Open this marker's info window
+            if (marker.infoWindow) {
+                marker.infoWindow.setPosition(marker.getPosition());
+                marker.infoWindow.open(map);
+            }
+        };
+
+        labelDiv.addEventListener('click', openMetadata);
+        labelDiv.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                openMetadata(event);
+            }
+        });
     };
 
     overlay.draw = function() {
@@ -458,7 +474,7 @@ function createLabelOverlay(marker, depthText, depthCm) {
         if (!position) return;
         
         labelDiv.style.left = (position.x - 26) + 'px';
-        labelDiv.style.top = (position.y - 58) + 'px';
+        labelDiv.style.top = (position.y + 5) + 'px';
     };
 
     overlay.onRemove = function() {
@@ -474,34 +490,6 @@ function createLabelOverlay(marker, depthText, depthCm) {
 // =============================================================================
 // TOGGLE FUNCTIONS
 // =============================================================================
-
-function toggleLabels() {
-    showDepthLabels = !showDepthLabels;
-    
-    const btn = document.getElementById('labelToggle');
-    if (btn) {
-        btn.classList.toggle('active', showDepthLabels);
-    }
-
-    labelOverlays.forEach(overlay => {
-        if (overlay.labelDiv) {
-            overlay.labelDiv.style.display = showDepthLabels ? 'block' : 'none';
-        }
-    });
-}
-
-function toggleIcons() {
-    showIcons = !showIcons;
-    
-    const btn = document.getElementById('iconToggle');
-    if (btn) {
-        btn.classList.toggle('active', showIcons);
-    }
-
-    markers.forEach(marker => {
-        marker.setVisible(showIcons);
-    });
-}
 
 function toggleFullscreen() {
     const elem = document.documentElement;
@@ -598,20 +586,15 @@ function showRefreshIndicator(show) {
 }
 
 function updateInfoPanel(count) {
-    const countEl = document.getElementById('submissionCount');
     const updateEl = document.getElementById('lastUpdate');
-    
-    if (countEl) {
-        countEl.textContent = `${count} active report${count !== 1 ? 's' : ''}`;
-    }
+    const dotEl = document.getElementById('statusDot');
     
     if (updateEl) {
-        const now = new Date();
-        updateEl.textContent = `Updated: ${now.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
-        })}`;
+        updateEl.textContent = 'Updated';
+    }
+    if (dotEl) {
+        dotEl.classList.add('pulse');
+        setTimeout(() => dotEl.classList.remove('pulse'), 2000);
     }
 }
 
@@ -796,7 +779,6 @@ function updateAnimationUI() {
     const pauseIcon = document.getElementById('animPauseIcon');
     const currentIndexEl = document.getElementById('animCurrentIndex');
     const totalCountEl = document.getElementById('animTotalCount');
-    const timestampEl = document.getElementById('animTimestamp');
     
     // Update play/pause button
     if (playIcon && pauseIcon) {
@@ -816,32 +798,13 @@ function updateAnimationUI() {
     if (totalCountEl) {
         totalCountEl.textContent = allSubmissions.length;
     }
-    
-    // Update timestamp
-    if (timestampEl && currentAnimationIndex > 0 && currentAnimationIndex <= allSubmissions.length) {
-        const currentSub = allSubmissions[currentAnimationIndex - 1];
-        if (currentSub && currentSub.received_at) {
-            const d = new Date(currentSub.received_at);
-            timestampEl.textContent = d.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-            });
-        }
-    } else {
-        timestampEl.textContent = '--:--';
-    }
 }
 
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
 
-window.addEventListener('load', async () => {
-    // Load portraits first
-    await loadPortraits();
-    
-    // Initialize map
+window.addEventListener('load', () => {
     initMap();
 });
 

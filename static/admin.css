@@ -1040,6 +1040,47 @@ body {
     font-size: 0.85rem;
 }
 
+/* AI Tab responsive helpers */
+#aiTab .card {
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+#aiTab .search-bar {
+    margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+    #aiTab .card {
+        padding: 14px;
+    }
+
+    #aiTab .search-bar {
+        flex-direction: column;
+    }
+
+    #aiTab .search-bar input {
+        width: 100%;
+    }
+
+    #aiTab [style*="display: flex"][style*="gap: 12px"] {
+        flex-wrap: wrap;
+    }
+
+    #aiTab [style*="display: flex"][style*="justify-content: flex-end"] {
+        flex-direction: column;
+    }
+
+    #aiTab [style*="display: flex"][style*="justify-content: flex-end"] button {
+        width: 100%;
+    }
+
+    #aiTab [style*="display: flex"][style*="justify-content: space-between"] {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
 /* ========== TABLET STYLES ========== */
 @media (min-width: 480px) {
     .container {
@@ -1069,6 +1110,7 @@ body {
 
     .search-bar {
         flex-direction: row;
+        align-items: center;
     }
 
     .search-bar input {
@@ -1185,7 +1227,265 @@ body {
     }
 }
 
-/* Mobile-specific language menu adjustments */
+/* ========== MOBILE-SPECIFIC (max-width) ========== */
+
+/* -- Small phones -- */
+@media (max-width: 360px) {
+    .container {
+        padding: 0 10px;
+    }
+
+    .main-header .container {
+        gap: 8px;
+    }
+
+    .logo-text h1 {
+        font-size: 0.95rem;
+    }
+
+    .logo-text p {
+        display: none;
+    }
+
+    .back-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .admin-section {
+        padding: 12px 10px;
+    }
+
+    .auth-card {
+        padding: 20px 16px;
+        border-radius: 14px;
+    }
+
+    .auth-card h2 {
+        font-size: 1.2rem;
+    }
+
+    .control-panel {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .admin-title {
+        font-size: 1.2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .stat-label {
+        font-size: 0.68rem;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+    }
+
+    .tabs {
+        padding: 6px;
+        border-radius: 10px;
+        gap: 4px;
+    }
+
+    .tab-btn {
+        padding: 8px 6px;
+        font-size: 0.72rem;
+        min-width: 0;
+    }
+
+    .tab-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .filter-btn {
+        padding: 8px 10px;
+        font-size: 0.78rem;
+        min-width: 50px;
+    }
+
+    .submission-card {
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .submission-thumb {
+        height: 140px;
+        border-radius: 8px;
+    }
+
+    .submission-info h4 {
+        font-size: 0.92rem;
+    }
+
+    .submission-info p {
+        font-size: 0.8rem;
+    }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 14px;
+    }
+
+    .modal-footer {
+        padding: 14px 16px;
+        gap: 8px;
+    }
+
+    .modal-image {
+        max-height: 180px;
+    }
+
+    .btn-valid,
+    .btn-invalid {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* -- Mobile phones -- */
+@media (max-width: 480px) {
+    .admin-section {
+        padding: 14px 12px;
+    }
+
+    .main-header .container {
+        gap: 10px;
+    }
+
+    .logo-text p {
+        font-size: 0.7rem;
+    }
+
+    .back-btn {
+        padding: 7px 12px;
+        font-size: 0.82rem;
+    }
+
+    .admin-title {
+        font-size: 1.3rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .tabs {
+        gap: 6px;
+    }
+
+    .tab-btn {
+        padding: 8px 10px;
+        font-size: 0.78rem;
+        min-width: 0;
+    }
+
+    .search-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-actions {
+        flex-wrap: wrap;
+    }
+
+    .search-actions button {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .submission-card {
+        flex-direction: column;
+    }
+
+    .submission-thumb {
+        width: 100%;
+        height: 160px;
+    }
+
+    .submission-actions {
+        flex-direction: row;
+    }
+
+    .view-btn,
+    .delete-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .filter-buttons {
+        justify-content: center;
+    }
+
+    .filter-btn {
+        flex: 1;
+        min-width: 55px;
+    }
+
+    .control-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .crawl-section {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        margin: 8px;
+        max-height: calc(100vh - 16px);
+        border-radius: 18px;
+    }
+
+    .modal-overlay {
+        padding: 8px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-image {
+        max-height: 200px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .btn-valid,
+    .btn-invalid {
+        width: 100%;
+    }
+}
+
+/* -- Tablets (max-width: 768px) -- */
 @media (max-width: 767px) {
     .lang-menu {
         right: auto;
@@ -1210,5 +1510,31 @@ body {
     .lang-submenu .lang-menu-item {
         padding-left: 28px;
         font-size: 0.85rem;
+    }
+}
+
+/* ========== Touch device optimizations ========== */
+@media (hover: none) and (pointer: coarse) {
+    .tab-btn,
+    .filter-btn,
+    .view-btn,
+    .delete-btn,
+    .btn-accent,
+    .btn-outline,
+    .back-btn,
+    .auth-btn,
+    .btn-valid,
+    .btn-invalid,
+    .control-buttons button,
+    .search-actions button,
+    .lang-menu-item {
+        min-height: 44px;
+    }
+
+    .form-group input,
+    .search-bar input,
+    .crawl-section input {
+        font-size: 16px;
+        padding: 12px;
     }
 }
