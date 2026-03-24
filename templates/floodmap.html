@@ -4,53 +4,51 @@
 <div id="mapContainer" class="map-container">
     <div id="map" class="map-view"></div>
     
-    <!-- Map Controls -->
-    <div class="map-controls">
-        <!-- Basemap Selector -->
-        <div class="basemap-selector">
-            <button class="control-btn basemap-btn active" id="basemapSatellite" onclick="setBasemap('satellite')" title="Satellite View">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+    <!-- Top gradient for control readability on satellite -->
+    <div class="map-top-gradient"></div>
+
+    <!-- Connection Status Pill (top-left) -->
+    <div class="fm-status-bar" id="fmStatusBar">
+        <div class="fm-status-pill" id="fmStatusPill">
+            <span class="fm-status-dot live" id="fmStatusDot"></span>
+            <span class="fm-status-text" id="fmStatusText">LIVE</span>
+            <span class="fm-status-divider"></span>
+            <span class="fm-report-count" id="fmReportCount">0 reports</span>
+        </div>
+    </div>
+
+    <!-- Map Controls (top-right) -->
+    <div class="fm-controls" id="fmControls">
+        <div class="fm-control-group">
+            <button class="fm-btn active" id="basemapSatellite" onclick="setBasemap('satellite')" title="Satellite">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M2 12h20"/>
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                 </svg>
-                <span>Satellite</span>
             </button>
-            <button class="control-btn basemap-btn" id="basemapRoadmap" onclick="setBasemap('roadmap')" title="Street Map">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <button class="fm-btn" id="basemapRoadmap" onclick="setBasemap('roadmap')" title="Streets">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <path d="M9 3v18"/>
-                    <path d="M15 3v18"/>
-                    <path d="M3 9h18"/>
-                    <path d="M3 15h18"/>
+                    <path d="M9 3v18"/><path d="M15 3v18"/>
+                    <path d="M3 9h18"/><path d="M3 15h18"/>
                 </svg>
-                <span>Streets</span>
             </button>
-            <button class="control-btn basemap-btn" id="basemapHybrid" onclick="setBasemap('hybrid')" title="Hybrid View">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
+            <button class="fm-btn" id="basemapHybrid" onclick="setBasemap('hybrid')" title="Hybrid">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                 </svg>
-                <span>Hybrid</span>
             </button>
         </div>
-        
-        <div class="control-divider"></div>
-        
-        <!-- Action Controls Group -->
-        <div class="action-controls-group">
-            <!-- Fullscreen -->
-            <button class="control-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle fullscreen">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <div class="fm-control-group fm-actions">
+            <button class="fm-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
             </button>
-            
-            <!-- Refresh -->
-            <button class="control-btn" id="refreshBtn" onclick="manualRefresh()" title="Refresh data">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <button class="fm-btn" onclick="manualRefresh()" title="Refresh">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <polyline points="23 4 23 10 17 10"/>
                     <polyline points="1 20 1 14 7 14"/>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -58,112 +56,64 @@
             </button>
         </div>
     </div>
-    
-    <!-- Quick Stats Badge -->
-    <div class="quick-stats-badge" id="quickStats">
-        <div class="quick-stat-item">
-            <div class="quick-stat-label">Active Reports</div>
-            <div class="quick-stat-value" id="quickStatsCount">0</div>
-        </div>
-        <div class="quick-stat-divider"></div>
-        <div class="quick-stat-item">
-            <div class="quick-stat-label">Avg Depth</div>
-            <div class="quick-stat-value" id="quickStatsAvg">0 cm</div>
-        </div>
-        <div class="quick-stat-divider"></div>
-        <div class="quick-stat-item">
-            <div class="quick-stat-label">Critical</div>
-            <div class="quick-stat-value critical" id="quickStatsCritical">0</div>
-        </div>
-    </div>
-    
-    <!-- Refresh Indicator -->
-    <div class="refresh-indicator" id="refreshIndicator">
-        <div class="spinner"></div>
-        <span>Refreshing...</span>
-    </div>
-    
-    <!-- Auto-refresh Status -->
-    <div class="auto-refresh-status" id="autoRefreshStatus">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        <span>Auto-refresh: <strong>1 min</strong></span>
-        <span id="nextRefresh" class="next-refresh"></span>
-        <span class="status-dot" id="statusDot"></span>
-        <span id="lastUpdate" class="last-updated">Updated</span>
-    </div>
-    
-    <!-- Animation Controls -->
-    <div class="animation-controls" id="animationControls" style="display: none;">
-        <button class="anim-btn anim-btn-primary" id="animPlayPause" onclick="toggleAnimation()" title="Play/Pause animation">
-            <svg id="animPlayIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <polygon points="5 3 19 12 5 21 5 3"/>
+
+    <!-- Legend Panel (bottom-left, collapsible) -->
+    <div class="fm-legend" id="fmLegend">
+        <div class="fm-legend-header" onclick="toggleLegend()">
+            <span>Depth Legend</span>
+            <svg class="fm-legend-chevron" id="fmLegendChevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="6 9 12 15 18 9"/>
             </svg>
-            <svg id="animPauseIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display: none;">
-                <rect x="6" y="4" width="4" height="16"/>
-                <rect x="14" y="4" width="4" height="16"/>
-            </svg>
-        </button>
-        
-        <button class="anim-btn" id="animStop" onclick="stopAnimation()" title="Stop and reset animation">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <rect x="6" y="6" width="12" height="12"/>
-            </svg>
-        </button>
-        
-        <div class="anim-divider"></div>
-        
-        <div class="anim-speed-control">
-            <label for="animSpeed" style="font-size: 11px; color: #666; margin-right: 6px;">Speed:</label>
-            <select id="animSpeed" onchange="changeAnimationSpeed()" style="padding: 2px 6px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; background: white;">
-                <option value="0.5">0.5x</option>
-                <option value="1" selected>1x</option>
-                <option value="2">2x</option>
-                <option value="5">5x</option>
-                <option value="10">10x</option>
-            </select>
         </div>
-        
-        <div class="anim-divider"></div>
-        
-        <div class="anim-progress-info" id="animProgressInfo">
-            <span id="animCurrentIndex">0</span> / <span id="animTotalCount">0</span>
+        <div class="fm-legend-body" id="fmLegendBody">
+            <div class="fm-legend-item"><span class="fm-legend-swatch" style="background:#4CAF50"></span>0–30 cm · Safe</div>
+            <div class="fm-legend-item"><span class="fm-legend-swatch" style="background:#FFC107"></span>30–60 cm · Caution</div>
+            <div class="fm-legend-item"><span class="fm-legend-swatch" style="background:#FF9800"></span>60–100 cm · Warning</div>
+            <div class="fm-legend-item"><span class="fm-legend-swatch" style="background:#F44336"></span>&gt;100 cm · Danger</div>
         </div>
-        
     </div>
-    
-    <!-- Info Panel -->
-    <div class="info-panel">
-        <div class="info-legend">
-            <h4>Depth Legend</h4>
-            <div class="legend-items">
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #4CAF50;"></span>
-                    <span>0-30 cm · Safe</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #FFC107;"></span>
-                    <span>30-60 cm · Caution</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #FF9800;"></span>
-                    <span>60-100 cm · Warning</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #F44336;"></span>
-                    <span>&gt;100 cm · Danger</span>
-                </div>
-            </div>
+
+    <!-- Latest Report Card (bottom-right, auto-dismiss) -->
+    <div class="fm-latest-card" id="fmLatestCard">
+        <div class="fm-latest-header">
+            <span class="fm-latest-badge">NEW</span>
+            <span class="fm-latest-time" id="fmLatestTime"></span>
+            <button class="fm-latest-close" onclick="dismissLatestCard()" title="Dismiss">&times;</button>
         </div>
+        <div class="fm-latest-body">
+            <div class="fm-latest-depth" id="fmLatestDepth">0.00 m</div>
+            <div class="fm-latest-location" id="fmLatestLocation">—</div>
+            <div class="fm-latest-reporter" id="fmLatestReporter">—</div>
+        </div>
+    </div>
+
+    <!-- Collapsed Latest pill (shown after auto-dismiss) -->
+    <div class="fm-latest-pill" id="fmLatestPill" onclick="expandLatestCard()">
+        <span class="fm-latest-pill-dot"></span>
+        Latest
+    </div>
+
+    <!-- Connection Banner (shown on disconnect) -->
+    <div class="fm-conn-banner" id="fmConnBanner">
+        <span class="fm-conn-banner-text" id="fmConnBannerText">Connection lost. Retrying...</span>
+        <button class="fm-conn-banner-btn" onclick="manualReconnect()">Reconnect</button>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="fm-toast-container" id="fmToastContainer"></div>
+
+    <!-- Refresh Indicator (spinner) -->
+    <div class="fm-refresh-indicator" id="refreshIndicator">
+        <div class="fm-spinner"></div>
+        <span>Loading...</span>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<link rel="stylesheet" href="/static/floodmap.css">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-    // Pass Google API key to JavaScript
     window.GOOGLE_API_KEY = "{{ google_api_key }}";
 </script>
 <script src="/static/floodmap.js"></script>

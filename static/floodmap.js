@@ -1,263 +1,121 @@
 /* =============================================================================
-   AIResQ ClimSols FLOOD MAP - Google Maps with Satellite/Streets/Hybrid Views
-   Auto-refresh every 1 minute
+   AIResQ Flood Map — WebSocket Real-Time + Google Maps
+   No sequential marker animation. All markers appear instantly.
    ============================================================================= */
 
 // =============================================================================
 // CONFIGURATION
 // =============================================================================
-
-// Default bounds (India-wide, will adjust to data)
-const DEFAULT_BOUNDS = {
-    minLat: 8.0,
-    maxLat: 37.0,
-    minLng: 68.0,
-    maxLng: 97.5
-};
-
-// Map configuration
-const MAP_CONFIG = {
-    defaultZoom: 12,
-    minZoom: 5,
-    maxZoom: 20
-};
-
-// Auto-refresh interval: 1 minute (60000ms)
-const AUTO_REFRESH_INTERVAL = 60000;
+const DEFAULT_BOUNDS = { minLat: 8.0, maxLat: 37.0, minLng: 68.0, maxLng: 97.5 };
+const MAP_CONFIG     = { defaultZoom: 12, minZoom: 5, maxZoom: 20 };
 
 // =============================================================================
 // STATE
 // =============================================================================
-
 let map = null;
 let markers = [];
 let labelOverlays = [];
-let showStreetLabels = false;
 let currentBasemap = 'satellite';
-let autoRefreshTimer = null;
-let nextRefreshTime = null;
-let countdownTimer = null;
-let isInitialLoad = true;  // Track if this is the first load
+let isInitialLoad = true;
+let allSubmissions = [];          // full list (used for stats + de-dup)
+let knownIds = new Set();         // track IDs already on the map
+let latestMarkerId = null;        // ID of the marker with "latest" styling
 
-// Animation state
-let allSubmissions = [];
-let animationTimer = null;
-let isAnimating = false;
-let currentAnimationIndex = 0;
-let animationSpeed = 1; // 1x speed by default
+// Latest-card
+let latestCardData = null;        // store for re-expand
+
+// Socket
+let socket = null;
 
 // =============================================================================
 // POSITION PERSISTENCE
 // =============================================================================
-
 function saveMapPosition() {
     if (!map) return;
-    const center = map.getCenter();
-    const position = {
-        lat: center.lat(),
-        lng: center.lng(),
-        zoom: map.getZoom()
-    };
-    sessionStorage.setItem('floodmap_position', JSON.stringify(position));
+    const c = map.getCenter();
+    sessionStorage.setItem('floodmap_position', JSON.stringify({
+        lat: c.lat(), lng: c.lng(), zoom: map.getZoom()
+    }));
 }
-
 function restoreMapPosition() {
     try {
-        const saved = sessionStorage.getItem('floodmap_position');
-        if (saved) {
-            const position = JSON.parse(saved);
-            if (position.lat && position.lng && position.zoom) {
-                return position;
-            }
-        }
-    } catch (e) {
-        console.warn('Could not restore map position:', e);
-    }
+        const s = sessionStorage.getItem('floodmap_position');
+        if (s) { const p = JSON.parse(s); if (p.lat && p.lng && p.zoom) return p; }
+    } catch (_) {}
     return null;
 }
 
 // =============================================================================
 // MAP INITIALIZATION
 // =============================================================================
-
 function initMap() {
-    const mapEl = document.getElementById('map');
-    if (!mapEl) return;
-
+    const el = document.getElementById('map');
+    if (!el) return;
     if (!window.google || !window.google.maps) {
-        console.error('Google Maps not loaded, retrying...');
         setTimeout(initMap, 500);
         return;
     }
 
-    // Try to restore saved position, otherwise use default center
-    const savedPosition = restoreMapPosition();
-    const defaultCenter = savedPosition ? 
-        { lat: savedPosition.lat, lng: savedPosition.lng } :
-        { lat: (DEFAULT_BOUNDS.minLat + DEFAULT_BOUNDS.maxLat) / 2, lng: (DEFAULT_BOUNDS.minLng + DEFAULT_BOUNDS.maxLng) / 2 };
-    const initialZoom = savedPosition ? savedPosition.zoom : MAP_CONFIG.defaultZoom;
+    const saved = restoreMapPosition();
+    const center = saved
+        ? { lat: saved.lat, lng: saved.lng }
+        : { lat: (DEFAULT_BOUNDS.minLat + DEFAULT_BOUNDS.maxLat) / 2,
+            lng: (DEFAULT_BOUNDS.minLng + DEFAULT_BOUNDS.maxLng) / 2 };
+    const zoom = saved ? saved.zoom : MAP_CONFIG.defaultZoom;
 
-    // Create map with satellite view by default
-    map = new google.maps.Map(mapEl, {
-        center: defaultCenter,
-        zoom: initialZoom,
-        minZoom: MAP_CONFIG.minZoom,
-        maxZoom: MAP_CONFIG.maxZoom,
+    map = new google.maps.Map(el, {
+        center, zoom,
+        minZoom: MAP_CONFIG.minZoom, maxZoom: MAP_CONFIG.maxZoom,
         mapTypeId: 'satellite',
         disableDefaultUI: true,
         zoomControl: true,
-        zoomControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_BOTTOM
-        },
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        gestureHandling: 'greedy',
-        styles: getMapStyles()
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+        mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
+        gestureHandling: 'greedy'
     });
 
-    // Save position when user moves/zooms the map
     map.addListener('idle', saveMapPosition);
-    
-    // Mark that we have a saved position (skip fitBounds on initial load if we have saved position)
-    isInitialLoad = !savedPosition;
+    isInitialLoad = !saved;
 
-    // Load initial data
+    // Initial load — all markers at once
     loadSubmissions();
 
-    // Start auto-refresh
-    startAutoRefresh();
-    
-    console.log('AIResQ ClimSols Flood Map initialized with 1-minute auto-refresh');
+    // Start WebSocket for real-time updates
+    initSocket();
+
+    console.log('Flood Map initialised — WebSocket real-time');
 }
 
 // =============================================================================
 // BASEMAP CONTROL
 // =============================================================================
-
 function setBasemap(type) {
     if (!map) return;
-    
     currentBasemap = type;
-    
-    // Update button states
-    document.querySelectorAll('.basemap-btn').forEach(btn => {
-        btn.classList.remove('active');
+    document.querySelectorAll('.fm-btn').forEach(b => {
+        if (b.id && b.id.startsWith('basemap')) b.classList.remove('active');
     });
-    document.getElementById(`basemap${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('active');
-    
-    // Set map type
-    switch (type) {
-        case 'satellite':
-            map.setMapTypeId('satellite');
-            break;
-        case 'roadmap':
-            map.setMapTypeId('roadmap');
-            break;
-        case 'hybrid':
-            map.setMapTypeId('hybrid');
-            break;
-    }
-    
-    // Apply custom styles for each basemap mode
-    if (type === 'roadmap') {
-        map.setOptions({ styles: [] });
-    } else {
-        map.setOptions({ styles: [] });
-    }
-}
-
-function getMapStyles() {
-    // Styles to hide/show labels
-    if (showStreetLabels) {
-        return []; // Default Google styles with labels
-    }
-    
-    return [
-        {
-            featureType: 'all',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-        },
-        {
-            featureType: 'administrative',
-            elementType: 'labels',
-            stylers: [{ visibility: 'on' }]
-        }
-    ];
-}
-
-function toggleStreetLabels() {
-    showStreetLabels = !showStreetLabels;
-    
-    const btn = document.getElementById('streetLabelsToggle');
-    if (btn) {
-        btn.classList.toggle('active', showStreetLabels);
-    }
-    
-    // Apply styles
-    if (currentBasemap === 'roadmap') {
-        map.setOptions({ styles: showStreetLabels ? [] : getMapStyles() });
-    }
+    const id = 'basemap' + type.charAt(0).toUpperCase() + type.slice(1);
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.add('active');
+    map.setMapTypeId(type);
 }
 
 // =============================================================================
-// DATA LOADING
+// DATA LOADING  (initial + fallback)
 // =============================================================================
-
 async function loadSubmissions() {
     try {
         showRefreshIndicator(true);
-        
         const res = await fetch('/api/submissions');
         const submissions = await res.json();
-
-        // Sort submissions by received_at timestamp
-        submissions.sort((a, b) => {
-            const dateA = a.received_at ? new Date(a.received_at) : new Date(0);
-            const dateB = b.received_at ? new Date(b.received_at) : new Date(0);
-            return dateA - dateB;
-        });
-
-        // Store all submissions for animation
+        submissions.sort((a, b) => new Date(a.received_at || 0) - new Date(b.received_at || 0));
         allSubmissions = submissions;
-
-        // If currently animating, don't reload everything
-        if (isAnimating) {
-            showRefreshIndicator(false);
-            return;
-        }
-
-        // Clear existing markers and overlays
+        knownIds = new Set(submissions.map(s => s.id));
         clearMarkers();
-
-        // On initial load, start animation automatically
-        // Otherwise show all markers at once
-        if (isInitialLoad && submissions.length > 0) {
-            // Start animation automatically
-            setTimeout(() => {
-                startAnimation();
-            }, 500);
-        } else {
-            // Show all markers at once (normal mode)
-            displayAllMarkers(submissions);
-        }
-
-        // Update info panel
-        updateInfoPanel(submissions.length);
-        
-        // Update quick stats
-        updateQuickStats(submissions);
-        
-        // Show animation controls if there are submissions
-        const animControls = document.getElementById('animationControls');
-        if (animControls) {
-            animControls.style.display = submissions.length > 0 ? 'flex' : 'none';
-            updateAnimationUI();
-        }
-        
+        displayAllMarkers(submissions);
+        updateStats(submissions);
         showRefreshIndicator(false);
-        
         console.log(`Loaded ${submissions.length} submissions`);
     } catch (err) {
         console.error('Error loading submissions:', err);
@@ -265,549 +123,413 @@ async function loadSubmissions() {
     }
 }
 
+// =============================================================================
+// DISPLAY ALL MARKERS (instant, no animation)
+// Highlights only the most recent submission.
+// =============================================================================
 function displayAllMarkers(submissions) {
     let bounds = new google.maps.LatLngBounds();
-    let hasValidMarkers = false;
+    let hasValid = false;
 
-    submissions.forEach((sub, index) => {
-        if (!sub.gps || !sub.gps.lat || !sub.gps.lon) return;
-
-        const marker = createMarker(sub, index);
-        if (marker) {
-            markers.push(marker);
-            bounds.extend(marker.getPosition());
-            hasValidMarkers = true;
+    // Find the latest submission by received_at
+    let latestSub = null;
+    submissions.forEach(s => {
+        if (!s.gps || !s.gps.lat || !s.gps.lon) return;
+        if (!latestSub || new Date(s.received_at) > new Date(latestSub.received_at)) {
+            latestSub = s;
         }
     });
 
-    // Only fit bounds on initial load when there's no saved position
-    if (hasValidMarkers && markers.length > 0 && isInitialLoad) {
+    submissions.forEach(sub => {
+        if (!sub.gps || !sub.gps.lat || !sub.gps.lon) return;
+        const isLatest = latestSub && sub.id === latestSub.id;
+        const marker = createMarker(sub, isLatest);
+        if (marker) {
+            markers.push(marker);
+            bounds.extend(marker.getPosition());
+            hasValid = true;
+            if (isLatest) latestMarkerId = sub.id;
+        }
+    });
+
+    if (hasValid && isInitialLoad) {
         map.fitBounds(bounds);
-        
-        // Limit zoom level after fitting bounds
         const listener = google.maps.event.addListener(map, 'idle', () => {
             if (map.getZoom() > 16) map.setZoom(16);
             google.maps.event.removeListener(listener);
         });
+        isInitialLoad = false;
+    }
+
+    // Show latest card for the most recent submission
+    if (latestSub) showLatestCard(latestSub);
+}
+
+// =============================================================================
+// WEBSOCKET  (Socket.IO)
+// =============================================================================
+function initSocket() {
+    if (!window.io) { console.warn('Socket.IO client not loaded'); return; }
+
+    socket = io({ transports: ['websocket', 'polling'] });
+
+    socket.on('connect', () => {
+        console.log('WebSocket connected, transport:', socket.io.engine.transport.name);
+        setConnectionState('live');
+        disconnectedAt = null;
+    });
+
+    socket.on('new_submission', (sub) => {
+        const t0 = performance.now();
+        handleNewSubmission(sub);
+        console.log(`[ws] new_submission displayed in ${(performance.now() - t0).toFixed(1)}ms`, sub.id);
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.warn('WebSocket disconnected:', reason);
+        setConnectionState('reconnecting');
+        // Show offline banner after 10s if still disconnected
+        setTimeout(() => {
+            if (!socket.connected) {
+                setConnectionState('offline');
+                showConnBanner();
+            }
+        }, 10000);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('WebSocket reconnected after', attemptNumber, 'attempts');
+        setConnectionState('live');
+        hideConnBanner();
+        showToast('Back online', 'success');
+        // Reload all data to catch anything missed during disconnect
+        loadSubmissions();
+    });
+
+    socket.on('connect_error', () => {
+        setConnectionState('reconnecting');
+    });
+}
+
+function manualReconnect() {
+    if (socket) { socket.connect(); }
+}
+
+// =============================================================================
+// HANDLE NEW SUBMISSION  (instant display)
+// =============================================================================
+function handleNewSubmission(sub) {
+    if (!sub || !sub.gps || !sub.gps.lat || !sub.gps.lon) return;
+    if (knownIds.has(sub.id)) return; // duplicate guard
+
+    // Demote previous latest marker
+    if (latestMarkerId) {
+        demoteLatestMarker(latestMarkerId);
+    }
+
+    // Add to state
+    knownIds.add(sub.id);
+    allSubmissions.push(sub);
+
+    // Create marker as "latest"
+    const marker = createMarker(sub, true);
+    if (marker) {
+        markers.push(marker);
+        map.panTo(marker.getPosition());
+    }
+    latestMarkerId = sub.id;
+
+    // Update stats + latest card
+    updateStats(allSubmissions);
+    showLatestCard(sub);
+    showToast(`New report: ${(sub.flood_depth_cm / 100).toFixed(2)} m`, 'info');
+}
+
+function demoteLatestMarker(id) {
+    // Find the existing marker & label for this id, remove pulse ring
+    const idx = markers.findIndex(m => m._subId === id);
+    if (idx === -1) return;
+    const m = markers[idx];
+    // Remove pulse overlay if attached
+    if (m._pulseOverlay) { m._pulseOverlay.setMap(null); m._pulseOverlay = null; }
+    // Remove NEW badge from label
+    const lo = labelOverlays.find(l => l._subId === id);
+    if (lo && lo.labelDiv) {
+        const badge = lo.labelDiv.querySelector('.fm-new-badge');
+        if (badge) badge.remove();
     }
 }
 
-function createMarker(sub, index) {
+// =============================================================================
+// MARKER CREATION
+// =============================================================================
+function createMarker(sub, isLatest) {
     if (!sub.gps || !sub.gps.lat || !sub.gps.lon) return null;
-
-    const position = { lat: sub.gps.lat, lng: sub.gps.lon };
+    const pos = { lat: sub.gps.lat, lng: sub.gps.lon };
     const depthCm = sub.flood_depth_cm || 0;
-    const depthM = (depthCm / 100).toFixed(2);
+    const depthM  = (depthCm / 100).toFixed(2);
+    const color   = getDepthColor(depthCm);
 
-    // Get marker color based on depth
-    const markerColor = getDepthColor(depthCm);
-    
-    // Create invisible marker (used only for position tracking)
+    // Invisible anchor marker
     const marker = new google.maps.Marker({
-        position: position,
-        map: map,
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 0,
-            fillOpacity: 0,
-            strokeOpacity: 0
-        },
-        optimized: false,
-        visible: false,
-        zIndex: 0
+        position: pos, map,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0, fillOpacity: 0, strokeOpacity: 0 },
+        optimized: false, visible: false, zIndex: 0
     });
+    marker._subId = sub.id;
 
-    // Create depth label overlay with click functionality
-    const labelOverlay = createLabelOverlay(marker, depthM, depthCm, sub);
-    labelOverlay.setMap(map);
-    labelOverlays.push(labelOverlay);
+    // Label overlay
+    const labelOv = createLabelOverlay(marker, depthM, depthCm, sub, isLatest);
+    labelOv.setMap(map);
+    labelOv._subId = sub.id;
+    labelOverlays.push(labelOv);
 
-    // Create info window
-    const d = new Date(sub.received_at);
-    const dateStr = formatDateTime(d);
-
+    // Info window
+    const dateStr = formatDateTime(new Date(sub.received_at));
     const infoContent = `
         <div style="padding:8px 10px;font-family:Inter,sans-serif;min-width:160px;max-width:200px;">
             <div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">
                 📍 FLOOD REPORT
             </div>
-            <div style="font-size:20px;font-weight:700;color:${markerColor};margin-bottom:2px;">
-                ${depthM} m
-            </div>
-            <div style="font-size:10px;color:#666;margin-bottom:8px;">
-                ${getDepthLabel(depthCm)}
-            </div>
+            <div style="font-size:20px;font-weight:700;color:${color};margin-bottom:2px;">${depthM} m</div>
+            <div style="font-size:10px;color:#666;margin-bottom:8px;">${getDepthLabel(depthCm)}</div>
             <div style="border-top:1px solid #eee;padding-top:6px;">
-                <div style="font-size:10px;color:#555;margin-bottom:3px;">
-                    📅 ${dateStr}
-                </div>
-                <div style="font-size:10px;color:#666;margin-bottom:3px;">
-                    📍 ${sub.location || sub.street || 'Unknown location'}
-                </div>
-                <div style="font-size:10px;color:#666;">
-                    👤 ${sub.name || 'Anonymous'}
-                </div>
+                <div style="font-size:10px;color:#555;margin-bottom:3px;">📅 ${dateStr}</div>
+                <div style="font-size:10px;color:#666;margin-bottom:3px;">📍 ${sub.location || sub.street || 'Unknown'}</div>
+                <div style="font-size:10px;color:#666;">👤 ${sub.name || 'Anonymous'}</div>
             </div>
-        </div>
-    `;
+        </div>`;
+    const iw = new google.maps.InfoWindow({ content: infoContent, disableAutoPan: false });
+    marker.infoWindow = iw;
 
-    const infoWindow = new google.maps.InfoWindow({
-        content: infoContent,
-        disableAutoPan: false
-    });
+    // Pulse ring for latest
+    if (isLatest) {
+        const pulseOv = createPulseOverlay(marker);
+        pulseOv.setMap(map);
+        marker._pulseOverlay = pulseOv;
+    }
 
-    // Store info window on marker
-    marker.infoWindow = infoWindow;
     return marker;
 }
 
 // =============================================================================
-// DEPTH COLOR & LABELS
+// DEPTH HELPERS
 // =============================================================================
-
-function getDepthColor(depthCm) {
-    if (depthCm <= 30) return '#4CAF50';      // Green - Safe
-    if (depthCm <= 60) return '#FFC107';      // Yellow - Caution
-    if (depthCm <= 100) return '#FF9800';     // Orange - Warning
-    return '#F44336';                          // Red - Danger
+function getDepthColor(cm) {
+    if (cm <= 30)  return '#4CAF50';
+    if (cm <= 60)  return '#FFC107';
+    if (cm <= 100) return '#FF9800';
+    return '#F44336';
 }
-
-function getDepthLabel(depthCm) {
-    if (depthCm === 0) return 'No Flood';
-    if (depthCm <= 30) return 'Low - Safe for vehicles';
-    if (depthCm <= 60) return 'Moderate - Caution advised';
-    if (depthCm <= 100) return 'High - Danger for vehicles';
-    return 'Severe - Evacuation recommended';
+function getDepthLabel(cm) {
+    if (cm === 0)  return 'No Flood';
+    if (cm <= 30)  return 'Low – Safe for vehicles';
+    if (cm <= 60)  return 'Moderate – Caution advised';
+    if (cm <= 100) return 'High – Danger for vehicles';
+    return 'Severe – Evacuation recommended';
 }
 
 // =============================================================================
 // LABEL OVERLAY
 // =============================================================================
-
-function createLabelOverlay(marker, depthText, depthCm, submissionData) {
+function createLabelOverlay(marker, depthText, depthCm, sub, isLatest) {
     const color = getDepthColor(depthCm);
-    
     const labelDiv = document.createElement('div');
     labelDiv.className = 'depth-label-overlay';
     labelDiv.innerHTML = `
-        <div style="
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 6px solid ${color};
-            margin: 0 auto;
-        "></div>
-        <div style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 52px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: ${color};
-            color: white;
-            font: 600 12px/1.2 Inter, Arial, sans-serif;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        ">
+        <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid ${color};margin:0 auto;"></div>
+        <div style="display:flex;align-items:center;justify-content:center;min-width:52px;padding:4px 8px;border-radius:6px;background:${color};color:white;font:600 12px/1.2 Inter,Arial,sans-serif;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:transform .2s,box-shadow .2s;gap:4px;">
             ${depthText}m
-        </div>
-    `;
+            ${isLatest ? '<span class="fm-new-badge" style="background:#fff;color:'+color+';font-size:8px;padding:1px 4px;border-radius:3px;font-weight:700;">NEW</span>' : ''}
+        </div>`;
 
     const overlay = new google.maps.OverlayView();
-
-    overlay.onAdd = function() {
-        const panes = this.getPanes();
-        panes.overlayMouseTarget.appendChild(labelDiv);
+    overlay.onAdd = function () {
+        this.getPanes().overlayMouseTarget.appendChild(labelDiv);
         labelDiv.style.position = 'absolute';
-        labelDiv.style.display = 'block';
         labelDiv.style.pointerEvents = 'auto';
         labelDiv.style.zIndex = '200';
-        labelDiv.setAttribute('role', 'button');
-        labelDiv.setAttribute('tabindex', '0');
-        labelDiv.setAttribute('aria-label', `Show details for ${depthText} meters flood report`);
-        
-        // Add hover effects
-        const labelContent = labelDiv.querySelectorAll('div')[1];
-        labelContent.addEventListener('mouseenter', () => {
-            labelContent.style.transform = 'scale(1.1)';
-            labelContent.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
-        });
-        labelContent.addEventListener('mouseleave', () => {
-            labelContent.style.transform = 'scale(1)';
-            labelContent.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-        });
-        
-        // Add click handler to show info window
-        const openMetadata = (event) => {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
 
-            // Close all other info windows
-            markers.forEach(m => m.infoWindow && m.infoWindow.close());
-
-            // Open this marker's info window
-            if (marker.infoWindow) {
-                marker.infoWindow.setPosition(marker.getPosition());
-                marker.infoWindow.open(map);
-            }
-        };
-
-        labelDiv.addEventListener('click', openMetadata);
-        labelDiv.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                openMetadata(event);
-            }
-        });
-    };
-
-    overlay.draw = function() {
-        const projection = this.getProjection();
-        if (!projection) return;
-        
-        const position = projection.fromLatLngToDivPixel(marker.getPosition());
-        if (!position) return;
-        
-        labelDiv.style.left = (position.x - 26) + 'px';
-        labelDiv.style.top = (position.y + 5) + 'px';
-    };
-
-    overlay.onRemove = function() {
-        if (labelDiv.parentElement) {
-            labelDiv.parentElement.removeChild(labelDiv);
+        const content = labelDiv.querySelectorAll('div')[1];
+        if (content) {
+            content.addEventListener('mouseenter', () => { content.style.transform = 'scale(1.1)'; content.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)'; });
+            content.addEventListener('mouseleave', () => { content.style.transform = 'scale(1)'; content.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)'; });
         }
-    };
 
+        labelDiv.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            markers.forEach(m => m.infoWindow && m.infoWindow.close());
+            if (marker.infoWindow) { marker.infoWindow.setPosition(marker.getPosition()); marker.infoWindow.open(map); }
+        });
+    };
+    overlay.draw = function () {
+        const proj = this.getProjection(); if (!proj) return;
+        const pt = proj.fromLatLngToDivPixel(marker.getPosition()); if (!pt) return;
+        labelDiv.style.left = (pt.x - 26) + 'px';
+        labelDiv.style.top  = (pt.y + 5)  + 'px';
+    };
+    overlay.onRemove = function () { if (labelDiv.parentElement) labelDiv.parentElement.removeChild(labelDiv); };
     overlay.labelDiv = labelDiv;
     return overlay;
 }
 
 // =============================================================================
-// TOGGLE FUNCTIONS
+// PULSE RING OVERLAY  (subtle)
 // =============================================================================
+function createPulseOverlay(marker) {
+    const div = document.createElement('div');
+    div.innerHTML = '<div class="fm-pulse-ring"></div>';
+    div.style.position = 'absolute';
+    div.style.pointerEvents = 'none';
 
-function toggleFullscreen() {
-    const elem = document.documentElement;
-    
-    if (!document.fullscreenElement) {
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) {
-            elem.msRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-    }
+    const ov = new google.maps.OverlayView();
+    ov.onAdd = function () { this.getPanes().overlayLayer.appendChild(div); };
+    ov.draw = function () {
+        const proj = this.getProjection(); if (!proj) return;
+        const pt = proj.fromLatLngToDivPixel(marker.getPosition()); if (!pt) return;
+        div.style.left = (pt.x - 20) + 'px';
+        div.style.top  = (pt.y - 14) + 'px';
+    };
+    ov.onRemove = function () { if (div.parentElement) div.parentElement.removeChild(div); };
+    return ov;
 }
 
 // =============================================================================
-// AUTO-REFRESH (1 MINUTE)
+// UI HELPERS
 // =============================================================================
-
-function startAutoRefresh() {
-    stopAutoRefresh();
-    
-    // Set next refresh time
-    nextRefreshTime = Date.now() + AUTO_REFRESH_INTERVAL;
-    
-    // Start refresh timer
-    autoRefreshTimer = setInterval(() => {
-        console.log('Auto-refreshing map data...');
-        loadSubmissions();
-        nextRefreshTime = Date.now() + AUTO_REFRESH_INTERVAL;
-    }, AUTO_REFRESH_INTERVAL);
-    
-    // Start countdown display
-    updateCountdown();
-    countdownTimer = setInterval(updateCountdown, 1000);
-    
-    console.log('Auto-refresh started: updates every 60 seconds');
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-    }
-    if (countdownTimer) {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-    }
-}
-
-function updateCountdown() {
-    const el = document.getElementById('nextRefresh');
-    if (!el || !nextRefreshTime) return;
-    
-    const remaining = Math.max(0, Math.ceil((nextRefreshTime - Date.now()) / 1000));
-    el.textContent = `(${remaining}s)`;
-}
-
-function manualRefresh() {
-    loadSubmissions();
-    nextRefreshTime = Date.now() + AUTO_REFRESH_INTERVAL;
-}
-
-// =============================================================================
-// UI UTILITIES
-// =============================================================================
-
 function clearMarkers() {
-    markers.forEach(m => {
-        if (m.infoWindow) m.infoWindow.close();
-        m.setMap(null);
-    });
+    markers.forEach(m => { if (m.infoWindow) m.infoWindow.close(); if (m._pulseOverlay) m._pulseOverlay.setMap(null); m.setMap(null); });
     markers = [];
-
-    labelOverlays.forEach(overlay => {
-        overlay.setMap(null);
-    });
+    labelOverlays.forEach(o => o.setMap(null));
     labelOverlays = [];
 }
 
 function showRefreshIndicator(show) {
-    const indicator = document.getElementById('refreshIndicator');
-    if (indicator) {
-        indicator.classList.toggle('active', show);
-    }
+    const el = document.getElementById('refreshIndicator');
+    if (el) el.classList.toggle('active', show);
 }
 
-function updateInfoPanel(count) {
-    const updateEl = document.getElementById('lastUpdate');
-    const dotEl = document.getElementById('statusDot');
-    
-    if (updateEl) {
-        updateEl.textContent = 'Updated';
-    }
-    if (dotEl) {
-        dotEl.classList.add('pulse');
-        setTimeout(() => dotEl.classList.remove('pulse'), 2000);
-    }
-}
+function updateStats(submissions) {
+    const count = submissions.length;
+    const valid = submissions.filter(s => s.flood_depth_cm !== undefined);
+    const avg   = valid.length > 0 ? Math.round(valid.reduce((s, v) => s + (v.flood_depth_cm || 0), 0) / valid.length) : 0;
+    const crit  = valid.filter(s => (s.flood_depth_cm || 0) > 100).length;
 
-function updateQuickStats(submissions) {
-    const quickStatsCount = document.getElementById('quickStatsCount');
-    const quickStatsAvg = document.getElementById('quickStatsAvg');
-    const quickStatsCritical = document.getElementById('quickStatsCritical');
-    
-    if (!quickStatsCount || !quickStatsAvg || !quickStatsCritical) return;
-    
-    const validSubmissions = submissions.filter(sub => sub.flood_depth_cm !== undefined);
-    
-    // Count
-    quickStatsCount.textContent = validSubmissions.length;
-    
-    // Average depth
-    if (validSubmissions.length > 0) {
-        const totalDepth = validSubmissions.reduce((sum, sub) => sum + (sub.flood_depth_cm || 0), 0);
-        const avgDepth = Math.round(totalDepth / validSubmissions.length);
-        quickStatsAvg.textContent = `${avgDepth} cm`;
-    } else {
-        quickStatsAvg.textContent = '0 cm';
-    }
-    
-    // Critical count (>100cm)
-    const criticalCount = validSubmissions.filter(sub => (sub.flood_depth_cm || 0) > 100).length;
-    quickStatsCritical.textContent = criticalCount;
-    
-    // Add pulse animation if there are critical reports
-    if (criticalCount > 0) {
-        quickStatsCritical.classList.add('pulse');
-    } else {
-        quickStatsCritical.classList.remove('pulse');
-    }
+    const el = document.getElementById('fmReportCount');
+    if (el) el.textContent = `${count} report${count !== 1 ? 's' : ''}`;
 }
 
 function formatDateTime(d) {
     const pad = n => n.toString().padStart(2, '0');
-    const day = pad(d.getDate());
-    const month = pad(d.getMonth() + 1);
-    const year = d.getFullYear();
-    const hour = pad(d.getHours());
-    const min = pad(d.getMinutes());
-    return `${day}/${month}/${year} ${hour}:${min}`;
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // =============================================================================
-// ANIMATION CONTROLS
+// LATEST CARD
 // =============================================================================
+function showLatestCard(sub) {
+    latestCardData = sub;
+    const card = document.getElementById('fmLatestCard');
+    const pill = document.getElementById('fmLatestPill');
+    if (!card) return;
 
-function toggleAnimation() {
-    if (isAnimating) {
-        pauseAnimation();
+    const depthM = ((sub.flood_depth_cm || 0) / 100).toFixed(2);
+    const color  = getDepthColor(sub.flood_depth_cm || 0);
+    document.getElementById('fmLatestDepth').textContent = depthM + ' m';
+    document.getElementById('fmLatestDepth').style.color = color;
+    document.getElementById('fmLatestLocation').textContent = sub.location || sub.street || 'Unknown';
+    document.getElementById('fmLatestReporter').textContent = sub.name || 'Anonymous';
+    document.getElementById('fmLatestTime').textContent = formatDateTime(new Date(sub.received_at));
+
+    card.classList.add('visible');
+    card.classList.remove('dismissed');
+    if (pill) pill.classList.remove('visible');
+}
+
+function dismissLatestCard() {
+    const card = document.getElementById('fmLatestCard');
+    const pill = document.getElementById('fmLatestPill');
+    if (card) card.classList.add('dismissed');
+    if (pill && latestCardData) pill.classList.add('visible');
+}
+
+function expandLatestCard() {
+    if (latestCardData) showLatestCard(latestCardData);
+}
+
+// =============================================================================
+// CONNECTION STATE UX
+// =============================================================================
+function setConnectionState(state) {
+    const dot  = document.getElementById('fmStatusDot');
+    const text = document.getElementById('fmStatusText');
+    if (!dot || !text) return;
+
+    dot.className = 'fm-status-dot ' + state;
+    if (state === 'live')         text.textContent = 'LIVE';
+    else if (state === 'reconnecting') text.textContent = 'RECONNECTING';
+    else                          text.textContent = 'OFFLINE';
+}
+
+function showConnBanner() {
+    const el = document.getElementById('fmConnBanner');
+    if (el) el.classList.add('visible');
+}
+function hideConnBanner() {
+    const el = document.getElementById('fmConnBanner');
+    if (el) el.classList.remove('visible');
+}
+
+// =============================================================================
+// TOAST
+// =============================================================================
+function showToast(msg, type) {
+    const container = document.getElementById('fmToastContainer');
+    if (!container) return;
+    const t = document.createElement('div');
+    t.className = 'fm-toast ' + (type || 'info');
+    t.textContent = msg;
+    container.appendChild(t);
+    setTimeout(() => {
+        t.classList.add('out');
+        setTimeout(() => t.remove(), 300);
+    }, 3000);
+}
+
+// =============================================================================
+// LEGEND TOGGLE
+// =============================================================================
+function toggleLegend() {
+    const el = document.getElementById('fmLegend');
+    if (!el) return;
+    el.classList.toggle('collapsed');
+    // On mobile, also toggle 'expanded' for inverse default
+    el.classList.toggle('expanded');
+}
+
+// =============================================================================
+// FULLSCREEN
+// =============================================================================
+function toggleFullscreen() {
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+        (elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen).call(elem);
     } else {
-        startAnimation();
-    }
-}
-
-function startAnimation() {
-    if (allSubmissions.length === 0) return;
-    
-    // Stop auto-refresh during animation
-    stopAutoRefresh();
-    
-    // If starting from scratch, clear all markers
-    if (currentAnimationIndex === 0) {
-        clearMarkers();
-    }
-    
-    isAnimating = true;
-    
-    // Mark initial load as complete
-    isInitialLoad = false;
-    
-    updateAnimationUI();
-    
-    // Start displaying markers one by one
-    animateNextMarker();
-}
-
-function pauseAnimation() {
-    isAnimating = false;
-    if (animationTimer) {
-        clearTimeout(animationTimer);
-        animationTimer = null;
-    }
-    updateAnimationUI();
-}
-
-function stopAnimation() {
-    pauseAnimation();
-    currentAnimationIndex = 0;
-    
-    // Clear all markers and display all at once
-    clearMarkers();
-    displayAllMarkers(allSubmissions);
-    
-    // Resume auto-refresh
-    startAutoRefresh();
-    
-    updateAnimationUI();
-}
-
-function animateNextMarker() {
-    if (!isAnimating || currentAnimationIndex >= allSubmissions.length) {
-        // Animation complete
-        isAnimating = false;
-        updateAnimationUI();
-        
-        // Resume auto-refresh
-        startAutoRefresh();
-        return;
-    }
-    
-    const submission = allSubmissions[currentAnimationIndex];
-    
-    // Create and add the marker
-    const marker = createMarker(submission, currentAnimationIndex);
-    if (marker) {
-        markers.push(marker);
-        
-        // On first marker, fit bounds to show all submissions area
-        if (currentAnimationIndex === 0 && allSubmissions.length > 0) {
-            const bounds = new google.maps.LatLngBounds();
-            allSubmissions.forEach(sub => {
-                if (sub.gps && sub.gps.lat && sub.gps.lon) {
-                    bounds.extend({ lat: sub.gps.lat, lng: sub.gps.lon });
-                }
-            });
-            map.fitBounds(bounds);
-            const listener = google.maps.event.addListener(map, 'idle', () => {
-                if (map.getZoom() > 14) map.setZoom(14);
-                google.maps.event.removeListener(listener);
-            });
-        } else {
-            // Center map on new marker with smooth pan
-            map.panTo(marker.getPosition());
-        }
-        
-        // Open info window briefly
-        if (marker.infoWindow) {
-            marker.infoWindow.open(map, marker);
-            
-            // Close after 800ms for faster animation
-            setTimeout(() => {
-                if (marker.infoWindow) {
-                    marker.infoWindow.close();
-                }
-            }, 800);
-        }
-    }
-    
-    currentAnimationIndex++;
-    updateAnimationUI();
-    
-    // Calculate delay based on speed (1000ms / speed)
-    const delay = 1000 / animationSpeed;
-    
-    // Schedule next marker
-    animationTimer = setTimeout(() => {
-        animateNextMarker();
-    }, delay);
-}
-
-function changeAnimationSpeed() {
-    const speedSelect = document.getElementById('animSpeed');
-    if (speedSelect) {
-        animationSpeed = parseFloat(speedSelect.value);
-        
-        // If currently animating, restart with new speed
-        if (isAnimating) {
-            if (animationTimer) {
-                clearTimeout(animationTimer);
-            }
-            animateNextMarker();
-        }
-    }
-}
-
-function updateAnimationUI() {
-    const playIcon = document.getElementById('animPlayIcon');
-    const pauseIcon = document.getElementById('animPauseIcon');
-    const currentIndexEl = document.getElementById('animCurrentIndex');
-    const totalCountEl = document.getElementById('animTotalCount');
-    
-    // Update play/pause button
-    if (playIcon && pauseIcon) {
-        if (isAnimating) {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
-        } else {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-        }
-    }
-    
-    // Update progress
-    if (currentIndexEl) {
-        currentIndexEl.textContent = currentAnimationIndex;
-    }
-    if (totalCountEl) {
-        totalCountEl.textContent = allSubmissions.length;
+        (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
     }
 }
 
 // =============================================================================
-// INITIALIZATION
+// MANUAL REFRESH
 // =============================================================================
+function manualRefresh() {
+    loadSubmissions();
+}
 
-window.addEventListener('load', () => {
-    initMap();
-});
-
+// =============================================================================
+// INIT
+// =============================================================================
+window.addEventListener('load', initMap);
 window.addEventListener('beforeunload', () => {
-    stopAutoRefresh();
+    if (socket) socket.disconnect();
 });

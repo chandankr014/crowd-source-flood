@@ -12,8 +12,10 @@ from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, send_from_directory, render_template, make_response, redirect
 import requests
 from PIL import Image
+from flask_socketio import SocketIO
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+socketio = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
 
@@ -355,6 +357,18 @@ def submit():
         submission_file = SUBMISSIONS_DIR / f"{submission_id}.json"
         with open(submission_file, 'w', encoding='utf-8') as f:
             json.dump(submission, f, indent=2)
+
+        # Emit real-time event to all connected map clients
+        socketio.emit('new_submission', {
+            'id': submission_id,
+            'gps': submission['gps'],
+            'received_at': submission['received_at'],
+            'flood_depth_cm': submission['flood_depth_cm'],
+            'location': submission.get('zone') or submission.get('street', 'Unknown location'),
+            'street': submission.get('street', ''),
+            'name': submission.get('name', 'Anonymous'),
+            'vehicle_type': submission.get('vehicle_type', '')
+        })
 
         return jsonify({'ok': True, 'id': submission_id})
 
@@ -882,5 +896,5 @@ def delete_saved_news(news_id):
         return jsonify({'error': 'Server error'}), 500
 
 if __name__ == '__main__':
-    app.run(host=HOST, port=PORT, debug=True)
+    socketio.run(app, host=HOST, port=int(PORT), debug=True, allow_unsafe_werkzeug=True)
     

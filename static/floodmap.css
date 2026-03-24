@@ -1,0 +1,514 @@
+/* =============================================================================
+   AIResQ Flood Map — Dark Glass-morphism Theme
+   ============================================================================= */
+
+/* Full-viewport map (sits beneath the navbar) */
+.map-container {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: calc(100vh - 64px);
+    z-index: 1;
+}
+.map-view {
+    width: 100%;
+    height: 100%;
+}
+
+/* Subtle top gradient for readability on satellite imagery */
+.map-top-gradient {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* =============================================================================
+   Shared Glass Panel Mixin
+   ============================================================================= */
+.fm-glass {
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #e4e8ec;
+}
+
+/* =============================================================================
+   Status Bar  (top-left)
+   ============================================================================= */
+.fm-status-bar {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 100;
+}
+
+.fm-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #e4e8ec;
+    font: 600 0.78rem/1 'Inter', sans-serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+
+.fm-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.fm-status-dot.live {
+    background: #4CAF50;
+    box-shadow: 0 0 6px rgba(76,175,80,0.7);
+    animation: fmPulse 2s ease-in-out infinite;
+}
+.fm-status-dot.reconnecting {
+    background: #FFC107;
+    animation: fmSpin 1s linear infinite;
+}
+.fm-status-dot.offline {
+    background: #F44336;
+    animation: none;
+}
+
+@keyframes fmPulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(76,175,80,0.5); }
+    50% { box-shadow: 0 0 12px rgba(76,175,80,0.9); }
+}
+@keyframes fmSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fm-status-text { text-transform: uppercase; letter-spacing: 0.5px; }
+.fm-status-divider {
+    width: 1px; height: 14px;
+    background: rgba(255,255,255,0.18);
+}
+.fm-report-count {
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+}
+
+/* =============================================================================
+   Controls  (top-right)
+   ============================================================================= */
+.fm-controls {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fm-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 14px;
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+.fm-control-group.fm-actions {
+    flex-direction: row;
+}
+
+.fm-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.fm-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+}
+.fm-btn.active {
+    background: rgba(13,149,137,0.55);
+    color: #fff;
+    border-color: rgba(13,149,137,0.6);
+}
+.fm-btn svg { flex-shrink: 0; }
+
+/* =============================================================================
+   Legend  (bottom-left, collapsible)
+   ============================================================================= */
+.fm-legend {
+    position: absolute;
+    bottom: 24px;
+    left: 14px;
+    z-index: 100;
+    min-width: 160px;
+    border-radius: 12px;
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.fm-legend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    font: 600 0.72rem/1.3 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: rgba(255,255,255,0.8);
+    user-select: none;
+}
+.fm-legend-chevron {
+    transition: transform 0.3s;
+    color: rgba(255,255,255,0.5);
+}
+.fm-legend.collapsed .fm-legend-chevron {
+    transform: rotate(-90deg);
+}
+.fm-legend-body {
+    padding: 0 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 200px;
+    opacity: 1;
+}
+.fm-legend.collapsed .fm-legend-body {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 12px;
+    overflow: hidden;
+}
+.fm-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 400 0.75rem/1.3 'Inter', sans-serif;
+    color: rgba(255,255,255,0.75);
+    padding: 2px 0;
+}
+.fm-legend-swatch {
+    width: 16px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* =============================================================================
+   Latest Report Card  (bottom-right, auto-dismiss)
+   ============================================================================= */
+.fm-latest-card {
+    position: absolute;
+    bottom: 24px;
+    right: 14px;
+    z-index: 100;
+    width: 260px;
+    border-radius: 14px;
+    background: rgba(15, 20, 30, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    display: none; /* hidden until first real-time submission */
+}
+.fm-latest-card.visible {
+    display: block;
+}
+.fm-latest-card.dismissed {
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fm-latest-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 6px;
+}
+.fm-latest-badge {
+    background: #F44336;
+    color: #fff;
+    font: 700 0.6rem/1 'Inter', sans-serif;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.fm-latest-time {
+    flex: 1;
+    font: 400 0.7rem/1 'Inter', sans-serif;
+    color: rgba(255,255,255,0.5);
+}
+.fm-latest-close {
+    background: none; border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.fm-latest-close:hover { color: #fff; }
+
+.fm-latest-body {
+    padding: 4px 14px 12px;
+}
+.fm-latest-depth {
+    font: 700 1.4rem/1.2 'Inter', sans-serif;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.fm-latest-location {
+    font: 400 0.78rem/1.3 'Inter', sans-serif;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 2px;
+}
+.fm-latest-reporter {
+    font: 400 0.7rem/1.3 'Inter', sans-serif;
+    color: rgba(255,255,255,0.45);
+}
+
+/* Collapsed "Latest" pill */
+.fm-latest-pill {
+    position: absolute;
+    bottom: 24px;
+    right: 14px;
+    z-index: 99;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    font: 600 0.75rem/1 'Inter', sans-serif;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.fm-latest-pill:hover {
+    background: rgba(25, 35, 50, 0.85);
+}
+.fm-latest-pill.visible {
+    display: inline-flex;
+}
+.fm-latest-pill-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #F44336;
+    box-shadow: 0 0 6px rgba(244,67,54,0.6);
+}
+
+/* =============================================================================
+   Connection Banner
+   ============================================================================= */
+.fm-conn-banner {
+    position: absolute;
+    top: 54px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 18px;
+    border-radius: 10px;
+    background: rgba(50, 20, 15, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(244,67,54,0.3);
+    font: 500 0.8rem/1 'Inter', sans-serif;
+    color: #fca5a5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+.fm-conn-banner.visible {
+    display: flex;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.fm-conn-banner-btn {
+    background: rgba(244,67,54,0.25);
+    border: 1px solid rgba(244,67,54,0.4);
+    color: #fca5a5;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font: 600 0.72rem/1 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.fm-conn-banner-btn:hover {
+    background: rgba(244,67,54,0.4);
+}
+
+/* =============================================================================
+   Toast
+   ============================================================================= */
+.fm-toast-container {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+}
+.fm-toast {
+    padding: 8px 18px;
+    border-radius: 10px;
+    background: rgba(15, 20, 30, 0.82);
+    backdrop-filter: blur(12px);
+    color: #e4e8ec;
+    font: 500 0.8rem/1.3 'Inter', sans-serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    pointer-events: auto;
+    animation: fmToastIn 0.3s ease forwards;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.fm-toast.success { border-left: 3px solid #4CAF50; }
+.fm-toast.info    { border-left: 3px solid #0288D1; }
+.fm-toast.warn    { border-left: 3px solid #FFC107; }
+
+@keyframes fmToastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.fm-toast.out {
+    animation: fmToastOut 0.3s ease forwards;
+}
+@keyframes fmToastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* =============================================================================
+   Refresh Indicator
+   ============================================================================= */
+.fm-refresh-indicator {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 150;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: rgba(15, 20, 30, 0.72);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.10);
+    font: 500 0.78rem/1 'Inter', sans-serif;
+    color: rgba(255,255,255,0.7);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.fm-refresh-indicator.active { display: inline-flex; }
+.fm-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #0D9589;
+    border-radius: 50%;
+    animation: fmSpinAnim 0.8s linear infinite;
+}
+@keyframes fmSpinAnim { to { transform: rotate(360deg); } }
+
+/* =============================================================================
+   Depth Label Drop-Shadow (applied via JS)
+   ============================================================================= */
+.depth-label-overlay {
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+}
+
+/* =============================================================================
+   Latest Marker Pulse (subtle version)
+   ============================================================================= */
+.fm-pulse-ring {
+    position: absolute;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(244,67,54,0.5);
+    animation: fmRingPulse 2s ease-out infinite;
+    pointer-events: none;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+@keyframes fmRingPulse {
+    0%   { transform: translate(-50%,-50%) scale(0.6); opacity: 0.7; }
+    100% { transform: translate(-50%,-50%) scale(1.8); opacity: 0; }
+}
+
+/* =============================================================================
+   Responsive
+   ============================================================================= */
+@media (max-width: 768px) {
+    .map-container {
+        top: 56px;
+        height: calc(100vh - 56px);
+    }
+    .fm-controls {
+        top: 8px; right: 8px; gap: 6px;
+    }
+    .fm-btn { width: 34px; height: 34px; }
+    .fm-status-bar { top: 8px; left: 8px; }
+    .fm-status-pill { padding: 5px 10px; font-size: 0.7rem; }
+    .fm-legend {
+        bottom: 12px; left: 8px; min-width: 140px;
+    }
+    .fm-legend.collapsed .fm-legend-body { max-height: 0; }
+    /* Hide legend body by default on mobile */
+    .fm-legend .fm-legend-body { max-height: 0; opacity: 0; padding: 0 12px; overflow: hidden; }
+    .fm-legend.expanded .fm-legend-body { max-height: 200px; opacity: 1; padding: 0 12px 10px; }
+    .fm-latest-card { width: 220px; right: 8px; bottom: 12px; }
+    .fm-latest-pill { right: 8px; bottom: 12px; }
+    .fm-conn-banner { top: 48px; }
+    .fm-toast-container { bottom: 70px; }
+}
+
+@media (max-width: 480px) {
+    .fm-latest-card { width: 190px; }
+    .fm-status-pill { gap: 5px; padding: 4px 8px; font-size: 0.66rem; }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .map-container { top: 48px; height: calc(100vh - 48px); }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .map-container { top: 60px; height: calc(100vh - 60px); }
+}

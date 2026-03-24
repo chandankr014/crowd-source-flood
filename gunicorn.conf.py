@@ -8,8 +8,8 @@ backlog = 2048
 # Worker processes
 # Use a conservative default to avoid OOM on constrained HPC nodes
 # Formula: (2 x num_cores) + 1 is standard, but we'll cap it or use env var
-workers = int(os.getenv('WORKERS', 2))
-worker_class = 'sync'
+workers = int(os.getenv('WORKERS', 1))
+worker_class = 'geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
 threads = int(os.getenv('THREADS', 1))  # Use 1 thread per worker to avoid threading issues
 timeout = 120
 keepalive = 5
